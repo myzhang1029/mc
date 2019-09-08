@@ -4,62 +4,28 @@
 #include <stdint.h>
 #include <stdio.h>
 
-/* PCG generator */
-typedef struct
-{
-    uint64_t state;
-    uint64_t inc;
-} pcg32_random_t;
+/* PCG generator
+ *Really* minimal PCG32 code / (c) 2014 M.E. O'Neill / pcg-random.org
+ Licensed under Apache License 2.0 (NO WARRANTY, etc. see website)
+ */
 
-typedef struct
-{
-    pcg32_random_t gen[2];
-} pcg32x2_random_t;
+typedef struct { uint64_t state;  uint64_t inc; } pcg32_random_t;
 
-inline uint32_t pcg32_rand(pcg32_random_t *rng)
+uint32_t pcg32_rand(pcg32_random_t* rng)
 {
     uint64_t oldstate = rng->state;
-    rng->state = oldstate * 6364136223846793005ULL + rng->inc;
+    // Advance internal state
+    rng->state = oldstate * 6364136223846793005ULL + (rng->inc|1);
+    // Calculate output function (XSH RR), uses old state for max ILP
     uint32_t xorshifted = ((oldstate >> 18u) ^ oldstate) >> 27u;
     uint32_t rot = oldstate >> 59u;
     return (xorshifted >> rot) | (xorshifted << ((-rot) & 31));
-}
-
-inline void pcg32_srand(pcg32_random_t *rng, uint64_t initstate)
-{
-    rng->state = 0U;
-    rng->inc = ((uint64_t)rng << 1u) | 1u;
-    pcg32_rand(rng);
-    rng->state += initstate;
-    pcg32_rand(rng);
-}
-
-inline void pcg32x2_srand(pcg32x2_random_t *rng, uint64_t initstates)
-{
-    pcg32_srand(rng->gen, initstates);
-    pcg32_srand(rng->gen + 1, initstates);
-}
-
-inline uint64_t pcg32x2_rand(pcg32x2_random_t *rng)
-{
-    return ((uint64_t)(pcg32_rand(rng->gen)) << 32) | pcg32_rand(rng->gen + 1);
-}
-
-inline uint64_t pcg32x2_uniform(pcg32x2_random_t *rng, uint64_t bound)
-{
-    uint64_t threshold = -bound % bound;
-    for (;;)
-    {
-        uint64_t r = pcg32x2_rand(rng);
-        if (r >= threshold)
-            return r % bound;
-    }
 }
 /* End PCG generator */
 
 double monte_carlo(uint32_t radius, uint64_t rand_samples)
 {
-    uint64_t r = radius * rand_samples;
+    double r = radius * rand_samples;
     uint64_t rmax = 2 * r + 1;
     uint64_t i;
     /* Avoid data race */
@@ -70,19 +36,15 @@ double monte_carlo(uint32_t radius, uint64_t rand_samples)
         /* Using two rngs for x and y makes the
          * sequence more uniform, and it costs no
          * extra time */
-        uint64_t x_dot, y_dot;
+        double x_dot, y_dot;
         double d1, d2;
-        pcg32x2_random_t thrd_rngx, thrd_rngy;
-        pcg32x2_srand(&thrd_rngx, UINT64_C(42));
-        pcg32x2_srand(&thrd_rngy, UINT64_C(42));
+        pcg32_random_t thrd_rngx, thrd_rngy;
 #pragma omp for
         for (i = 0; i < rand_samples; ++i)
         {
-            x_dot = pcg32x2_uniform(&thrd_rngx, rmax);
-            y_dot = pcg32x2_uniform(&thrd_rngy, rmax);
-            uint64_t dx = r > x_dot ? r - x_dot : x_dot-r;
-            uint64_t dy = r > y_dot ? r - y_dot : y_dot-r;
-            d1 = hypot(dx, dy);
+            x_dot = pcg32_rand(&thrd_rngx)/UINT32_MAX;
+            y_dot = pcg32_rand(&thrd_rngy)/UINT32_MAX;
+            d1 = hypot(r - x_dot, r - y_dot);
             d2 = hypot(2 * r - x_dot, y_dot);
             if (d1 < r && d2 >= 2 * r)
                 ++inside;
