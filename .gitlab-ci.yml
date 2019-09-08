@@ -1,0 +1,28 @@
+image: debian
+
+build:
+  stage: build
+  # instead of calling g++ directly you can also use some build toolkit like make
+  # install the necessary build tools when needed
+  before_script:
+    - apt-get update
+    - apt-get -y install gcc mpich
+  script:
+    - gcc -Ofast -fopenmp -ffast-math -o mc_func mc_func.c -lm
+    - mpicc -Ofast -ffast-math -o mc_func_mpi mc_func_mpi.c
+    - gcc -Ofast -fopenmp -ffast-math -o mc_hypot mc_hypot.c -lm
+  artifacts:
+    paths:
+      - mc_func
+      - mc_func_mpi
+      - mc_hypot
+
+test:
+  stage: test
+  before_script:
+    - apt-get update
+    - apt-get install -y mpich time
+  script:
+    - /usr/bin/time ./mc_func
+    - mpiexec -n 4 ./mc_func_mpi
+    - /usr/bin/time ./mc_hypot
