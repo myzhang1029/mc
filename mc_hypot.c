@@ -11,6 +11,9 @@
 
 typedef struct { uint64_t state;  uint64_t inc; } pcg32_random_t;
 
+#define PCGI1   { 0x853c49e6748fea9bULL, 0xda3e39cb94b95bdbULL }
+#define PCGI2   { 0xda3e39cb94b95bdbULL, 0x853c49e6748fea9bULL }
+
 uint32_t pcg32_rand(pcg32_random_t* rng)
 {
     uint64_t oldstate = rng->state;
@@ -23,29 +26,28 @@ uint32_t pcg32_rand(pcg32_random_t* rng)
 }
 /* End PCG generator */
 
-double monte_carlo(uint32_t radius, uint64_t rand_samples)
+double monte_carlo(double radius, uint64_t rand_samples)
 {
     double r = radius * rand_samples;
-    uint64_t rmax = 2 * r + 1;
+    double rmax = 2 * r + 1;
     uint64_t i;
     /* Avoid data race */
     _Atomic uint64_t inside = 0;
 
 #pragma omp parallel
     {
-        /* Using two rngs for x and y makes the
-         * sequence more uniform, and it costs no
-         * extra time */
         double x_dot, y_dot;
         double d1, d2;
-        pcg32_random_t thrd_rngx, thrd_rngy;
+        pcg32_random_t thrd_rngx=PCGI1, thrd_rngy=PCGI2;
 #pragma omp for
         for (i = 0; i < rand_samples; ++i)
         {
-            x_dot = pcg32_rand(&thrd_rngx)/UINT32_MAX;
-            y_dot = pcg32_rand(&thrd_rngy)/UINT32_MAX;
+            x_dot = pcg32_rand(&thrd_rngx)/(double)UINT32_MAX * rmax;
+            y_dot = pcg32_rand(&thrd_rngy)/(double)UINT32_MAX * rmax;
+            //printf("%lf %lf\n", x_dot, y_dot);
             d1 = hypot(r - x_dot, r - y_dot);
             d2 = hypot(2 * r - x_dot, y_dot);
+            //printf("%lf %lf\n", d1, d2);
             if (d1 < r && d2 >= 2 * r)
                 ++inside;
         }
