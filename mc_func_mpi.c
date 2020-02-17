@@ -4,7 +4,7 @@
 #include <stdatomic.h>
 #include <stdint.h>
 #include <stdio.h>
-
+#define inline
 /* PCG generator */
 typedef struct
 {
@@ -137,9 +137,9 @@ int main(int argc, char **argv)
     each = rand_samples / nproc;
     if (rand_samples % nproc != 0)
         adjust = rand_samples - nproc * each;
-    if (me == 0)
+    if (me == 0) /* Controller process */
     {
-        printf("%" PRIu64 ", %" PRIu64 "\n", each, adjust);
+        printf("Each process: %" PRIu64 "points, adjust %" PRIu64 "\n", each, adjust);
         inside = monte_carlo_core(r, 0, each + adjust);
         for (int i = 1; i < nproc; ++i)
         {
@@ -152,7 +152,7 @@ int main(int argc, char **argv)
         printf("%" PRIu64 "/%" PRIu64 "\n", inside, rand_samples);
         printf("%g\n", size);
     }
-    else
+    else /* Not controller */
     {
         inside =
             monte_carlo_core(r, me * each + adjust, (me + 1) * each + adjust);
