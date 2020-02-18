@@ -11,9 +11,6 @@
 
 typedef struct { uint64_t state;  uint64_t inc; } pcg32_random_t;
 
-#define PCGI1   { 0x853c49e6748fea9bULL, 0xda3e39cb94b95bdbULL }
-#define PCGI2   { 0xda3e39cb94b95bdbULL, 0x853c49e6748fea9bULL }
-
 uint32_t pcg32_rand(pcg32_random_t* rng)
 {
     uint64_t oldstate = rng->state;
@@ -24,6 +21,16 @@ uint32_t pcg32_rand(pcg32_random_t* rng)
     uint32_t rot = oldstate >> 59u;
     return (xorshifted >> rot) | (xorshifted << ((-rot) & 31));
 }
+
+void pcg32_srand(pcg32_random_t *rng, uint64_t initstate)
+{
+    rng->state = 0U;
+    rng->inc = ((uint64_t)rng << 1u) | 1u;
+    pcg32_rand(rng);
+    rng->state += initstate;
+    pcg32_rand(rng);
+}
+
 /* End PCG generator */
 
 double monte_carlo(double radius, uint64_t rand_samples)
@@ -38,7 +45,9 @@ double monte_carlo(double radius, uint64_t rand_samples)
     {
         double x_dot, y_dot;
         double d1, d2;
-        pcg32_random_t thrd_rngx=PCGI1, thrd_rngy=PCGI2;
+        pcg32_random_t thrd_rngx, thrd_rngy;
+        pcg32_srand(&thrd_rngx, UINT64_C(42));
+        pcg32_srand(&thrd_rngy, UINT64_C(42));
 #pragma omp for
         for (i = 0; i < rand_samples; ++i)
         {
@@ -61,13 +70,13 @@ int main()
     /* Algorithm sufficiency:
      * result: avg 3, effective rounding
      * samp result(avg)    timing(one)
-     * 1e6  146286.0(3)         0.03s user 0.00s system 238% cpu 0.013 total
-     * 1e7  1463853.7(3)        0.28s user 0.00s system 351% cpu 0.081 total
-     * 1e8  14633653.3(3)       2.84s user 0.00s system 383% cpu 0.741 total
+     * 1e6  146667.7(3)         0.03s user 0.00s system 287% cpu 0.012 total
+     * 1e7  1463004.0(3)        0.33s user 0.00s system 310% cpu 0.106 total
+     * 1e8  14639563.7(3)       3.05s user 0.01s system 366% cpu 0.832 total
      * 1e9  146382682.0(3)     28.29s user 0.04s system 386% cpu 7.323 total
      * 1e10 1463808882.7(3)   275.08s user 0.61s system 317% cpu 1:26.79 total
      * 1e11 14638184449.0(2) 2834.62s user 3.75s system 377% cpu 12:32.64 total
-     * 1e12 146381275885(1) 28990.61s user 35.68s system 367% cpu 2:11:39.73
+     * 1e12 146381605453(1) 31440.66s user 57.17s system 389% cpu 2:14:56.27 total
      * total
      *
      * accur:
