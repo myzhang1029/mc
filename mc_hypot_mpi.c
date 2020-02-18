@@ -63,6 +63,7 @@ uint64_t monte_carlo_core(double r, uint64_t startpoint, uint64_t endpoint)
 int main(int argc, char **argv)
 {
     uint64_t rand_samples = UINT64_C(1000000000);
+    // 146381717756/1000000000000
     uint64_t each, adjust = 0;
     uint32_t radius = 5;
 
