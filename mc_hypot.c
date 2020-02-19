@@ -53,10 +53,8 @@ double monte_carlo(double radius, uint64_t rand_samples)
         {
             x_dot = pcg32_rand(&thrd_rngx)/(double)UINT32_MAX * rmax;
             y_dot = pcg32_rand(&thrd_rngy)/(double)UINT32_MAX * rmax;
-            //printf("%lf %lf\n", x_dot, y_dot);
             d1 = hypot(r - x_dot, r - y_dot);
             d2 = hypot(2 * r - x_dot, y_dot);
-            //printf("%lf %lf\n", d1, d2);
             if (d1 < r && d2 >= 2 * r)
                 ++inside;
         }
