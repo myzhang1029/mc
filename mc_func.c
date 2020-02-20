@@ -138,7 +138,7 @@ int main()
      * /8))-0.5*sin(2*pi-2*arccos(-sqrt(2)/4)))*r*r
      * =14.638125953034784
      */
-    double size = monte_carlo(UINT64_C(5), UINT64_C(10000000000));
+    double size = monte_carlo(UINT64_C(5), UINT64_C(1000000000));
     printf("%g\n", size);
     return 0;
 }
