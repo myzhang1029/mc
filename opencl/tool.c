@@ -1,5 +1,9 @@
 /* OpenCL helper program for macOS OpenCL */
-#include <OpenCL/opencl.h>
+#ifdef __APPLE__
+#include <OpenCL/OpenCL.h>
+#else
+#include <CL/cl.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 

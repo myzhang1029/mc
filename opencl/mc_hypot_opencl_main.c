@@ -1,6 +1,8 @@
-#ifdef KERNEL_PROGRAM
+#ifdef __APPLE__
+#include <OpenCL/OpenCL.h>
 #else
-#include <OpenCL/opencl.h>
+#include <CL/cl.h>
+#endif
 #include <stdio.h>
 #include <string.h>
 
@@ -140,4 +142,3 @@ int main(void)
     free_devices(devices);
     return 0;
 }
-#endif
