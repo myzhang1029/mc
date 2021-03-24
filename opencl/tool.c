@@ -138,25 +138,26 @@ cl_device_id **get_devices(cl_platform_id platform)
     cl_int stat;
     cl_uint numcpu, numgpu;
     cl_uint i;
+    device_types = xmalloc(sizeof(cl_device_id *) * 2);
 
     stat = clGetDeviceIDs(platform, CL_DEVICE_TYPE_CPU, 0, NULL, &numcpu);
-    stat |= clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, 0, NULL, &numgpu);
-    if (stat != CL_SUCCESS)
-        return NULL;
-    device_types = xmalloc(sizeof(cl_device_id *) * 2);
-    if (numcpu)
+    if (stat != CL_SUCCESS || numcpu == 0)
+    /* No CPUs discovered or errors happened */
+    cpufail:
+        device_types[0] = NULL;
+    else
     {
+        /* CPU discovered */
+        printf("[INFO]: Got %d CPU(s)\n", numcpu);
         device_types[0] = xmalloc((numcpu + 1) * sizeof(cl_device_id));
         stat = clGetDeviceIDs(platform, CL_DEVICE_TYPE_CPU, numcpu,
                               device_types[0], NULL);
         if (stat != CL_SUCCESS)
         {
-            fprintf(stderr, "Get devices failed\n");
+            fprintf(stderr, "Get CPU devices failed\n");
             free(device_types[0]);
-            free(device_types);
-            return NULL;
+            goto cpufail;
         }
-        printf("[INFO]: Got %d CPU(s)\n", numcpu);
         for (i = 0; i < numcpu; ++i)
         {
             printf("[INFO]: CPU %d's info:\n", i + 1);
@@ -164,23 +165,24 @@ cl_device_id **get_devices(cl_platform_id platform)
         }
         device_types[0][numcpu] = NULL;
     }
-    else
-        device_types[0] = NULL;
 
-    if (numgpu)
+    stat = clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, 0, NULL, &numgpu);
+    if (stat != CL_SUCCESS || numgpu == 0)
+    /* No GPUs discovered or errors happened */
+    gpufail:
+        device_types[1] = NULL;
+    else
     {
+        printf("[INFO]: Got %d GPU(s)\n", numgpu);
         device_types[1] = xmalloc((numgpu + 1) * sizeof(cl_device_id));
         stat = clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, numgpu,
                               device_types[1], NULL);
         if (stat != CL_SUCCESS)
         {
-            fprintf(stderr, "Get devices failed\n");
+            fprintf(stderr, "Get GPU devices failed\n");
             free(device_types[1]);
-            free(device_types[0]);
-            free(device_types);
-            return NULL;
+            goto gpufail;
         }
-        printf("[INFO]: Got %d GPU(s)\n", numgpu);
         for (i = 0; i < numgpu; ++i)
         {
             printf("[INFO]: GPU %d's info:\n", i + 1);
@@ -188,8 +190,6 @@ cl_device_id **get_devices(cl_platform_id platform)
         }
         device_types[1][numgpu] = NULL;
     }
-    else
-        device_types[1] = NULL;
     return device_types;
 }
 
