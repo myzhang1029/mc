@@ -65,7 +65,7 @@ double monte_carlo(double radius, uint64_t rand_samples)
 
 int main()
 {
-    /* Algorithm sufficiency:
+    /* Algorithm efficiency:
      * result: avg 3, effective rounding
      * samp result(avg)    timing(one)
      * 1e6  146667.7(3)         0.03s user 0.00s system 287% cpu 0.012 total
