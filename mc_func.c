@@ -4,58 +4,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-/* PCG generator */
-typedef struct
-{
-    uint64_t state;
-    uint64_t inc;
-} pcg32_random_t;
-
-typedef struct
-{
-    pcg32_random_t gen[2];
-} pcg32x2_random_t;
-
-static inline uint32_t pcg32_rand(pcg32_random_t *rng)
-{
-    uint64_t oldstate = rng->state;
-    rng->state = oldstate * 6364136223846793005ULL + rng->inc;
-    uint32_t xorshifted = ((oldstate >> 18u) ^ oldstate) >> 27u;
-    uint32_t rot = oldstate >> 59u;
-    return (xorshifted >> rot) | (xorshifted << ((-rot) & 31));
-}
-
-static inline void pcg32_srand(pcg32_random_t *rng, uint64_t initstate)
-{
-    rng->state = 0U;
-    rng->inc = ((uint64_t)rng << 1u) | 1u;
-    pcg32_rand(rng);
-    rng->state += initstate;
-    pcg32_rand(rng);
-}
-
-static inline void pcg32x2_srand(pcg32x2_random_t *rng, uint64_t initstates)
-{
-    pcg32_srand(rng->gen, initstates);
-    pcg32_srand(rng->gen + 1, initstates);
-}
-
-static inline uint64_t pcg32x2_rand(pcg32x2_random_t *rng)
-{
-    return ((uint64_t)(pcg32_rand(rng->gen)) << 32) | pcg32_rand(rng->gen + 1);
-}
-
-static inline uint64_t pcg32x2_uniform(pcg32x2_random_t *rng, uint64_t bound)
-{
-    uint64_t threshold = -bound % bound;
-    for (;;)
-    {
-        uint64_t r = pcg32x2_rand(rng);
-        if (r >= threshold)
-            return r % bound;
-    }
-}
-/* End PCG generator */
+#include "pcg_impl/pcg.h"
 
 /* When two uint64_ts multiply, it's a uint128.
  * so we use double */
@@ -99,8 +48,8 @@ uint64_t monte_carlo(uint32_t radius, uint64_t rand_samples)
         uint64_t x_dot, y_dot;
         double yu, yl, yt;
         pcg32x2_random_t thrd_rngx, thrd_rngy;
-        pcg32x2_srand(&thrd_rngx, UINT64_C(42));
-        pcg32x2_srand(&thrd_rngy, UINT64_C(42));
+        pcg32x2_srand(&thrd_rngx, UINT64_C(42), UINT64_C(430));
+        pcg32x2_srand(&thrd_rngy, UINT64_C(42), UINT64_C(431));
 #pragma omp for
         for (i = 0; i < rand_samples; ++i)
         {
