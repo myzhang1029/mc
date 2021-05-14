@@ -1,3 +1,3 @@
 # mc
 
-Monte Carlo Area Calculation
+My HPC attempts - Monte Carlo method to calculate areas
