@@ -9,7 +9,7 @@ typedef struct
     ulong inc;
 } pcg32_random_t;
 
-inline void pcg32_rand(pcg32_random_t *rng, uint *result)
+inline uint pcg32_rand(pcg32_random_t *rng)
 {
     ulong oldstate = rng->state;
     // Advance internal state
@@ -17,17 +17,16 @@ inline void pcg32_rand(pcg32_random_t *rng, uint *result)
     // Calculate output function (XSH RR), uses old state for max ILP
     uint xorshifted = ((oldstate >> 18u) ^ oldstate) >> 27u;
     uint rot = oldstate >> 59u;
-    *result = (xorshifted >> rot) | (xorshifted << ((-rot) & 31));
+    return (xorshifted >> rot) | (xorshifted << ((-rot) & 31));
 }
 
 inline void pcg32_srand(pcg32_random_t *rng, ulong initstate, ulong initseq)
 {
-    uint _; /* Unused */
     rng->state = 0U;
     rng->inc = (initseq << 1u) | 1u;
-    pcg32_rand(rng, &_);
+    pcg32_rand(rng);
     rng->state += initstate;
-    pcg32_rand(rng, &_);
+    pcg32_rand(rng);
 }
 
 // Derived from PCG's pcg_setseq_64_advance_r and pcg_advance_lcg_64
@@ -59,24 +58,21 @@ kernel void monte_carlo(
     /* Calculate parameter */
     double scaled_radius,
     /* Array of results */
-    global bool *results,
+    global uchar *results,
     /* Modulo for results because memory might be limited to fit all samples */
     uint modulo)
 {
     double rmax;
     double x_dot, y_dot, d1, d2;
-    uint rand_result;
     pcg32_random_t rng;
     size_t rank = get_global_id(0);
 
     rmax = 2 * scaled_radius + 1;
-    pcg32_srand(&rng, 42UL, 43UL);
+    pcg32_srand(&rng, 42UL, 430UL);
     /* Skip "previous" workers */
     pcg32_advance(&rng, rank * 2);
-    pcg32_rand(&rng, &rand_result);
-    x_dot = rand_result / (double)UINT_MAX * rmax;
-    pcg32_rand(&rng, &rand_result);
-    y_dot = rand_result / (double)UINT_MAX * rmax;
+    x_dot = pcg32_rand(&rng) / (double)UINT_MAX * rmax;
+    y_dot = pcg32_rand(&rng) / (double)UINT_MAX * rmax;
     d1 = hypot(scaled_radius - x_dot, scaled_radius - y_dot);
     d2 = hypot(2 * scaled_radius - x_dot, y_dot);
     /* Store & Return */

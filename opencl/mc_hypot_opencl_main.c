@@ -35,7 +35,7 @@ int main(void)
     cl_int stat;
     char *prog;
     size_t proglen[1];
-    bool *results;
+    cl_uchar *results;
     unsigned long wgsize;
     const char *filename = "mc_hypot_opencl.cl";
 
@@ -80,7 +80,7 @@ int main(void)
                                     sizeof(wgsize), &wgsize, NULL);
     CHECK_ERROR("Error retrieving kernel work group info\n");
 
-    results = malloc(sizeof(bool) * rand_samples);
+    results = malloc(sizeof(cl_uchar) * rand_samples);
 
     /* Prepare parameters */
     outmem = clCreateBuffer(ctx, CL_MEM_WRITE_ONLY, sizeof(bool) * rand_samples,
@@ -101,9 +101,9 @@ int main(void)
     CHECK_ERROR("Error executing kernel\n");
     /* Wait all */
     clFinish(cq);
-    stat =
-        clEnqueueReadBuffer(cq, outmem, CL_TRUE, 0, sizeof(bool) * rand_samples,
-                            results, 0, NULL, NULL);
+    stat = clEnqueueReadBuffer(cq, outmem, CL_TRUE, 0,
+                               sizeof(cl_uchar) * rand_samples, results, 0,
+                               NULL, NULL);
     CHECK_ERROR("Error reading output array\n");
     for (size_t i = 0; i < rand_samples; ++i)
     {
