@@ -35,10 +35,8 @@ int main(void)
     cl_int stat;
     char *prog;
     size_t proglen[1];
-    size_t nprocs;
-    size_t i;
-    unsigned long lnprocs;
-    unsigned long *results;
+    bool *results;
+    unsigned long wgsize;
     const char *filename = "mc_hypot_opencl.cl";
 
     plats = get_platforms();
@@ -79,47 +77,35 @@ int main(void)
     CHECK_ERROR("Error creating kernel\n");
 
     stat = clGetKernelWorkGroupInfo(kernel, to_use, CL_KERNEL_WORK_GROUP_SIZE,
-                                    sizeof(nprocs), &nprocs, NULL);
-    lnprocs = (unsigned long)nprocs;
+                                    sizeof(wgsize), &wgsize, NULL);
     CHECK_ERROR("Error retrieving kernel work group info\n");
 
-    results = malloc(sizeof(unsigned long) * nprocs);
+    results = malloc(sizeof(bool) * rand_samples);
 
     /* Prepare parameters */
-    outmem = clCreateBuffer(ctx, CL_MEM_WRITE_ONLY,
-                            sizeof(unsigned long) * nprocs, NULL, &stat);
+    outmem = clCreateBuffer(ctx, CL_MEM_WRITE_ONLY, sizeof(bool) * rand_samples,
+                            NULL, &stat);
     CHECK_ERROR("Error creating buffer\n");
-
-    each = rand_samples / nprocs;
-    if (rand_samples % nprocs != 0)
-    {
-        fprintf(stderr, "Warning: work adjusted: %lu%%%lu\n", rand_samples,
-                nprocs);
-        rand_samples = nprocs * each;
-    }
 
     /* radius */
     stat = clSetKernelArg(kernel, 0, sizeof(double), (void *)&r);
-    /* rand_samples for each proc */
-    stat |= clSetKernelArg(kernel, 1, sizeof(unsigned long), (void *)&each);
     /* The output list */
-    stat |= clSetKernelArg(kernel, 2, sizeof(cl_mem), (void *)&outmem);
-    /* procs in total */
-    stat |= clSetKernelArg(kernel, 3, sizeof(unsigned long), (void *)&lnprocs);
-    /* Something random to be used as initseq */
-    stat |= clSetKernelArg(kernel, 4, sizeof(unsigned long), (void *)&results);
+    stat |= clSetKernelArg(kernel, 1, sizeof(cl_mem), (void *)&outmem);
+    /* Size of outmem as modulo */
+    stat |=
+        clSetKernelArg(kernel, 2, sizeof(unsigned int), (void *)&rand_samples);
     CHECK_ERROR("Error setting args\n");
     /* Issue calls */
-    stat = clEnqueueNDRangeKernel(cq, kernel, 1, NULL, &lnprocs, &lnprocs, 0,
-                                  NULL, NULL);
+    stat = clEnqueueNDRangeKernel(cq, kernel, 1, NULL, &rand_samples, &wgsize,
+                                  0, NULL, NULL);
     CHECK_ERROR("Error executing kernel\n");
     /* Wait all */
     clFinish(cq);
-    stat = clEnqueueReadBuffer(cq, outmem, CL_TRUE, 0,
-                               sizeof(unsigned long) * nprocs, results, 0, NULL,
-                               NULL);
+    stat =
+        clEnqueueReadBuffer(cq, outmem, CL_TRUE, 0, sizeof(bool) * rand_samples,
+                            results, 0, NULL, NULL);
     CHECK_ERROR("Error reading output array\n");
-    for (i = 0; i < nprocs; ++i)
+    for (size_t i = 0; i < rand_samples; ++i)
     {
         inside += results[i];
     }

@@ -30,44 +30,58 @@ inline void pcg32_srand(pcg32_random_t *rng, ulong initstate, ulong initseq)
     pcg32_rand(rng, &_);
 }
 
+// Derived from PCG's pcg_setseq_64_advance_r and pcg_advance_lcg_64
+inline void pcg32_advance(pcg32_random_t *rng, ulong delta)
+{
+    ulong acc_mult = 1u;
+    ulong acc_plus = 0u;
+    ulong cur_mult = 6364136223846793005ULL;
+    ulong cur_plus = rng->inc;
+
+    while (delta > 0)
+    {
+        if (delta & 1)
+        {
+            acc_mult *= cur_mult;
+            acc_plus = acc_plus * cur_mult + cur_plus;
+        }
+        cur_plus = (cur_mult + 1) * cur_plus;
+        cur_mult *= cur_mult;
+        delta /= 2;
+    }
+    rng->state = acc_mult * rng->state + acc_plus;
+}
+
 /* End PCG generator */
 
 /* mc kernel function */
-kernel void monte_carlo(double radius, ulong rand_samples,
-                        /* Array of workers */
-                        global ulong *pinside,
-                        /* Workers in total */
-                        ulong count,
-                        /* Somehow the GPU doesn't seed well */
-                        ulong seed)
+kernel void monte_carlo(
+    /* Calculate parameter */
+    double scaled_radius,
+    /* Array of results */
+    global bool *results,
+    /* Modulo for results because memory might be limited to fit all samples */
+    uint modulo)
 {
-    double r;
     double rmax;
-    ulong i, inside;
     double x_dot, y_dot, d1, d2;
     uint rand_result;
     pcg32_random_t rng;
     size_t rank = get_global_id(0);
 
-    if (rank > count)
-        return;
-
-    r = radius * rand_samples;
-    rmax = 2 * r + 1;
-    inside = 0;
-    pcg32_srand(&rng, 42UL, seed + rank);
-
-    for (i = 0; i < rand_samples; ++i)
-    {
-        pcg32_rand(&rng, &rand_result);
-        x_dot = rand_result / (double)UINT_MAX * rmax;
-        pcg32_rand(&rng, &rand_result);
-        y_dot = rand_result / (double)UINT_MAX * rmax;
-        d1 = hypot(r - x_dot, r - y_dot);
-        d2 = hypot(2 * r - x_dot, y_dot);
-        if (d1 < r && d2 >= 2 * r)
-            ++inside;
-    }
+    rmax = 2 * scaled_radius + 1;
+    pcg32_srand(&rng, 42UL, 43UL);
+    /* Skip "previous" workers */
+    pcg32_advance(&rng, rank * 2);
+    pcg32_rand(&rng, &rand_result);
+    x_dot = rand_result / (double)UINT_MAX * rmax;
+    pcg32_rand(&rng, &rand_result);
+    y_dot = rand_result / (double)UINT_MAX * rmax;
+    d1 = hypot(scaled_radius - x_dot, scaled_radius - y_dot);
+    d2 = hypot(2 * scaled_radius - x_dot, y_dot);
     /* Store & Return */
-    pinside[rank] = inside;
+    if (d1 < scaled_radius && d2 >= 2 * scaled_radius)
+        results[rank % modulo] = 1;
+    else
+        results[rank % modulo] = 0;
 }
