@@ -8,6 +8,13 @@
 
 #include "tool.h"
 
+#define CHECK_ERROR(msg) do {if (stat != CL_SUCCESS)\
+    {\
+        fprintf(stderr, (msg));\
+        exit(1);\
+    }\
+}while(0)
+
 int main(void)
 {
     const double r = 5.0f;
@@ -42,8 +49,10 @@ int main(void)
         to_use = devices[0][0];
     else
         return 2;
-    ctx = clCreateContext(NULL, 1, &to_use, NULL, NULL, NULL);
-    cq = clCreateCommandQueue(ctx, to_use, 0, NULL);
+    ctx = clCreateContext(NULL, 1, &to_use, NULL, NULL, &stat);
+    CHECK_ERROR("Error creating context\n");
+    cq = clCreateCommandQueue(ctx, to_use, 0, &stat);
+    CHECK_ERROR("Error creating command queue\n");
 
     /* Load program */
     prog = file2str(filename);
@@ -63,28 +72,17 @@ int main(void)
     }
     
     kernel = clCreateKernel(program, "monte_carlo", &stat);
-    if (stat != CL_SUCCESS)
-    {
-        fprintf(stderr, "Error creating kernel\n");
-        exit(1);
-    }
+    CHECK_ERROR("Error creating kernel\n");
     
     stat = clGetKernelWorkGroupInfo(kernel, to_use, CL_KERNEL_WORK_GROUP_SIZE, sizeof(nprocs), &nprocs, NULL);
     lnprocs = (unsigned long) nprocs;
-    if (stat != CL_SUCCESS)
-    {
-        fprintf(stderr, "Error retrieving kernel work group info\n");
-        exit(1);
-    }
+    CHECK_ERROR("Error retrieving kernel work group info\n");
+
     results = malloc(sizeof(unsigned long) * nprocs);
     
     /* Prepare parameters */
     outmem = clCreateBuffer(ctx, CL_MEM_WRITE_ONLY, sizeof(unsigned long) * nprocs, NULL, &stat);
-    if (stat != CL_SUCCESS)
-    {
-        fprintf(stderr, "Error creating buffer\n");
-        exit(1);
-    }
+    CHECK_ERROR("Error creating buffer\n");
 
     each = rand_samples / nprocs;
     if (rand_samples % nprocs != 0)
@@ -103,26 +101,14 @@ int main(void)
     stat |= clSetKernelArg(kernel, 3, sizeof(unsigned long), (void *)&lnprocs);
     /* Something random to be used as initseq */
     stat |= clSetKernelArg(kernel, 4, sizeof(unsigned long), (void *)&results);
-    if (stat != CL_SUCCESS)
-    {
-        fprintf(stderr, "Error setting args\n");
-        exit(1);
-    }
+    CHECK_ERROR("Error setting args\n");
     /* Issue calls */
     stat = clEnqueueNDRangeKernel(cq, kernel, 1, NULL, &lnprocs, &lnprocs, 0, NULL, NULL);
-    if (stat != CL_SUCCESS)
-    {
-        fprintf(stderr, "Failed to execute kernel!\n");
-        exit(1);
-    }
+    CHECK_ERROR("Error executing kernel\n");
     /* Wait all */
     clFinish(cq);
     stat = clEnqueueReadBuffer(cq, outmem, CL_TRUE, 0, sizeof(unsigned long) * nprocs, results, 0, NULL, NULL);  
-    if (stat != CL_SUCCESS)
-    {
-        fprintf(stderr, "Error reading output array\n");
-        exit(1);
-    }
+    CHECK_ERROR("Error reading output array\n");
     for (i = 0; i < nprocs; ++i)
     {
         inside += results[i];
