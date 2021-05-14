@@ -9,13 +9,17 @@
  Licensed under Apache License 2.0 (NO WARRANTY, etc. see website)
  */
 
-typedef struct { uint64_t state;  uint64_t inc; } pcg32_random_t;
+typedef struct
+{
+    uint64_t state;
+    uint64_t inc;
+} pcg32_random_t;
 
-uint32_t pcg32_rand(pcg32_random_t* rng)
+uint32_t pcg32_rand(pcg32_random_t *rng)
 {
     uint64_t oldstate = rng->state;
     // Advance internal state
-    rng->state = oldstate * 6364136223846793005ULL + (rng->inc|1);
+    rng->state = oldstate * 6364136223846793005ULL + (rng->inc | 1);
     // Calculate output function (XSH RR), uses old state for max ILP
     uint32_t xorshifted = ((oldstate >> 18u) ^ oldstate) >> 27u;
     uint32_t rot = oldstate >> 59u;
@@ -49,8 +53,8 @@ uint64_t monte_carlo_core(double r, uint64_t startpoint, uint64_t endpoint)
 #pragma omp for
         for (; startpoint < endpoint; ++startpoint)
         {
-            x_dot = pcg32_rand(&thrd_rngx)/(double)UINT32_MAX * rmax;
-            y_dot = pcg32_rand(&thrd_rngy)/(double)UINT32_MAX * rmax;
+            x_dot = pcg32_rand(&thrd_rngx) / (double)UINT32_MAX * rmax;
+            y_dot = pcg32_rand(&thrd_rngy) / (double)UINT32_MAX * rmax;
             d1 = hypot_smp(r - x_dot, r - y_dot);
             d2 = hypot_smp(2 * r - x_dot, y_dot);
             if (d1 < r && d2 >= 2 * r)
@@ -82,7 +86,8 @@ int main(int argc, char **argv)
         adjust = rand_samples - nproc * each;
     if (me == 0) /* Controller process */
     {
-        printf("Each process: %" PRIu64 "points, adjust %" PRIu64 "\n", each, adjust);
+        printf("Each process: %" PRIu64 "points, adjust %" PRIu64 "\n", each,
+               adjust);
         inside = monte_carlo_core(r, 0, each + adjust);
         for (int i = 1; i < nproc; ++i)
         {
@@ -104,4 +109,3 @@ int main(int argc, char **argv)
     MPI_Finalize();
     return 0;
 }
-

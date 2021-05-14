@@ -9,27 +9,18 @@ typedef struct
     ulong inc;
 } pcg32_random_t;
 
-inline void
-pcg32_rand(
-    pcg32_random_t* rng,
-    uint *result
-)
+inline void pcg32_rand(pcg32_random_t *rng, uint *result)
 {
     ulong oldstate = rng->state;
     // Advance internal state
-    rng->state = oldstate * 6364136223846793005ULL + (rng->inc|1);
+    rng->state = oldstate * 6364136223846793005ULL + (rng->inc | 1);
     // Calculate output function (XSH RR), uses old state for max ILP
     uint xorshifted = ((oldstate >> 18u) ^ oldstate) >> 27u;
     uint rot = oldstate >> 59u;
     *result = (xorshifted >> rot) | (xorshifted << ((-rot) & 31));
 }
 
-inline void
-pcg32_srand(
-    pcg32_random_t *rng,
-    ulong initstate,
-    ulong initseq
-)
+inline void pcg32_srand(pcg32_random_t *rng, ulong initstate, ulong initseq)
 {
     uint _; /* Unused */
     rng->state = 0U;
@@ -42,17 +33,13 @@ pcg32_srand(
 /* End PCG generator */
 
 /* mc kernel function */
-kernel void
-monte_carlo(
-    double radius,
-    ulong rand_samples,
-    /* Array of workers */
-    global ulong *pinside,
-    /* Workers in total */
-    ulong count,
-    /* Somehow the GPU doesn't seed well */
-    ulong seed
-)
+kernel void monte_carlo(double radius, ulong rand_samples,
+                        /* Array of workers */
+                        global ulong *pinside,
+                        /* Workers in total */
+                        ulong count,
+                        /* Somehow the GPU doesn't seed well */
+                        ulong seed)
 {
     double r;
     double rmax;
@@ -61,7 +48,7 @@ monte_carlo(
     uint rand_result;
     pcg32_random_t rng;
     size_t rank = get_global_id(0);
-    
+
     if (rank > count)
         return;
 
@@ -73,9 +60,9 @@ monte_carlo(
     for (i = 0; i < rand_samples; ++i)
     {
         pcg32_rand(&rng, &rand_result);
-        x_dot = rand_result/(double)UINT_MAX * rmax;
+        x_dot = rand_result / (double)UINT_MAX * rmax;
         pcg32_rand(&rng, &rand_result);
-        y_dot = rand_result/(double)UINT_MAX * rmax;
+        y_dot = rand_result / (double)UINT_MAX * rmax;
         d1 = hypot(r - x_dot, r - y_dot);
         d2 = hypot(2 * r - x_dot, y_dot);
         if (d1 < r && d2 >= 2 * r)

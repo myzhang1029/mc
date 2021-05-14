@@ -139,7 +139,8 @@ int main(int argc, char **argv)
         adjust = rand_samples - nproc * each;
     if (me == 0) /* Controller process */
     {
-        printf("Each process: %" PRIu64 "points, adjust %" PRIu64 "\n", each, adjust);
+        printf("Each process: %" PRIu64 "points, adjust %" PRIu64 "\n", each,
+               adjust);
         inside = monte_carlo_core(r, 0, each + adjust);
         for (int i = 1; i < nproc; ++i)
         {

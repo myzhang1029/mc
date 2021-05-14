@@ -9,13 +9,17 @@
  Licensed under Apache License 2.0 (NO WARRANTY, etc. see website)
  */
 
-typedef struct { uint64_t state;  uint64_t inc; } pcg32_random_t;
+typedef struct
+{
+    uint64_t state;
+    uint64_t inc;
+} pcg32_random_t;
 
-uint32_t pcg32_rand(pcg32_random_t* rng)
+uint32_t pcg32_rand(pcg32_random_t *rng)
 {
     uint64_t oldstate = rng->state;
     // Advance internal state
-    rng->state = oldstate * 6364136223846793005ULL + (rng->inc|1);
+    rng->state = oldstate * 6364136223846793005ULL + (rng->inc | 1);
     // Calculate output function (XSH RR), uses old state for max ILP
     uint32_t xorshifted = ((oldstate >> 18u) ^ oldstate) >> 27u;
     uint32_t rot = oldstate >> 59u;
@@ -34,7 +38,7 @@ void pcg32_srand(pcg32_random_t *rng, uint64_t initstate)
 /* End PCG generator */
 
 // This line significantly speeds things up - with a very low risk of overflow
-inline double hypot_smp(double a, double b) { return sqrt(a*a+b*b); }
+inline double hypot_smp(double a, double b) { return sqrt(a * a + b * b); }
 
 double monte_carlo(double radius, uint64_t rand_samples)
 {
@@ -54,8 +58,8 @@ double monte_carlo(double radius, uint64_t rand_samples)
 #pragma omp for
         for (i = 0; i < rand_samples; ++i)
         {
-            x_dot = pcg32_rand(&thrd_rngx)/(double)UINT32_MAX * rmax;
-            y_dot = pcg32_rand(&thrd_rngy)/(double)UINT32_MAX * rmax;
+            x_dot = pcg32_rand(&thrd_rngx) / (double)UINT32_MAX * rmax;
+            y_dot = pcg32_rand(&thrd_rngy) / (double)UINT32_MAX * rmax;
             d1 = hypot_smp(r - x_dot, r - y_dot);
             d2 = hypot_smp(2 * r - x_dot, y_dot);
             if (d1 < r && d2 >= 2 * r)
@@ -77,8 +81,8 @@ int main()
      * 1e9  146382682.0(3)     28.29s user 0.04s system 386% cpu 7.323 total
      * 1e10 1463808882.7(3)   275.08s user 0.61s system 317% cpu 1:26.79 total
      * 1e11 14638184449.0(2) 2834.62s user 3.75s system 377% cpu 12:32.64 total
-     * 1e12 146381605453(1) 31440.66s user 57.17s system 389% cpu 2:14:56.27 total
-     * total
+     * 1e12 146381605453(1) 31440.66s user 57.17s system 389% cpu 2:14:56.27
+     * total total
      *
      * accur:
      * (pi-arccos(-sqrt(2)/4)-4*arccos(5*sqrt(2)/8)+2*sin(2*arccos(5*sqrt(2)

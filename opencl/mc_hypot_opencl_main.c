@@ -8,12 +8,15 @@
 
 #include "tool.h"
 
-#define CHECK_ERROR(msg) do {if (stat != CL_SUCCESS)\
-    {\
-        fprintf(stderr, (msg));\
-        exit(1);\
-    }\
-}while(0)
+#define CHECK_ERROR(msg)                                                       \
+    do                                                                         \
+    {                                                                          \
+        if (stat != CL_SUCCESS)                                                \
+        {                                                                      \
+            fprintf(stderr, (msg));                                            \
+            exit(1);                                                           \
+        }                                                                      \
+    } while (0)
 
 int main(void)
 {
@@ -66,28 +69,32 @@ int main(void)
         size_t len;
         char buffer[2048];
         fprintf(stderr, "Error building program\n");
-        clGetProgramBuildInfo(program, to_use, CL_PROGRAM_BUILD_LOG, sizeof(buffer), buffer, &len);
+        clGetProgramBuildInfo(program, to_use, CL_PROGRAM_BUILD_LOG,
+                              sizeof(buffer), buffer, &len);
         fprintf(stderr, "%s\n", buffer);
         exit(1);
     }
-    
+
     kernel = clCreateKernel(program, "monte_carlo", &stat);
     CHECK_ERROR("Error creating kernel\n");
-    
-    stat = clGetKernelWorkGroupInfo(kernel, to_use, CL_KERNEL_WORK_GROUP_SIZE, sizeof(nprocs), &nprocs, NULL);
-    lnprocs = (unsigned long) nprocs;
+
+    stat = clGetKernelWorkGroupInfo(kernel, to_use, CL_KERNEL_WORK_GROUP_SIZE,
+                                    sizeof(nprocs), &nprocs, NULL);
+    lnprocs = (unsigned long)nprocs;
     CHECK_ERROR("Error retrieving kernel work group info\n");
 
     results = malloc(sizeof(unsigned long) * nprocs);
-    
+
     /* Prepare parameters */
-    outmem = clCreateBuffer(ctx, CL_MEM_WRITE_ONLY, sizeof(unsigned long) * nprocs, NULL, &stat);
+    outmem = clCreateBuffer(ctx, CL_MEM_WRITE_ONLY,
+                            sizeof(unsigned long) * nprocs, NULL, &stat);
     CHECK_ERROR("Error creating buffer\n");
 
     each = rand_samples / nprocs;
     if (rand_samples % nprocs != 0)
     {
-        fprintf(stderr, "Warning: work adjusted: %lu%%%lu\n", rand_samples, nprocs);
+        fprintf(stderr, "Warning: work adjusted: %lu%%%lu\n", rand_samples,
+                nprocs);
         rand_samples = nprocs * each;
     }
 
@@ -103,11 +110,14 @@ int main(void)
     stat |= clSetKernelArg(kernel, 4, sizeof(unsigned long), (void *)&results);
     CHECK_ERROR("Error setting args\n");
     /* Issue calls */
-    stat = clEnqueueNDRangeKernel(cq, kernel, 1, NULL, &lnprocs, &lnprocs, 0, NULL, NULL);
+    stat = clEnqueueNDRangeKernel(cq, kernel, 1, NULL, &lnprocs, &lnprocs, 0,
+                                  NULL, NULL);
     CHECK_ERROR("Error executing kernel\n");
     /* Wait all */
     clFinish(cq);
-    stat = clEnqueueReadBuffer(cq, outmem, CL_TRUE, 0, sizeof(unsigned long) * nprocs, results, 0, NULL, NULL);  
+    stat = clEnqueueReadBuffer(cq, outmem, CL_TRUE, 0,
+                               sizeof(unsigned long) * nprocs, results, 0, NULL,
+                               NULL);
     CHECK_ERROR("Error reading output array\n");
     for (i = 0; i < nprocs; ++i)
     {
@@ -115,7 +125,7 @@ int main(void)
     }
 
     printf("%lu/%lu\n", inside, rand_samples);
-    printf("%g\n", inside / (double) rand_samples * 4 * r * r);
+    printf("%g\n", inside / (double)rand_samples * 4 * r * r);
 
     /* Clean up */
     free(results);
