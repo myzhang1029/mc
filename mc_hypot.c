@@ -33,6 +33,9 @@ void pcg32_srand(pcg32_random_t *rng, uint64_t initstate)
 
 /* End PCG generator */
 
+// This line significantly speeds things up - with a very low risk of overflow
+inline double hypot_smp(double a, double b) { return sqrt(a*a+b*b); }
+
 double monte_carlo(double radius, uint64_t rand_samples)
 {
     double r = radius * rand_samples;
@@ -53,8 +56,8 @@ double monte_carlo(double radius, uint64_t rand_samples)
         {
             x_dot = pcg32_rand(&thrd_rngx)/(double)UINT32_MAX * rmax;
             y_dot = pcg32_rand(&thrd_rngy)/(double)UINT32_MAX * rmax;
-            d1 = hypot(r - x_dot, r - y_dot);
-            d2 = hypot(2 * r - x_dot, y_dot);
+            d1 = hypot_smp(r - x_dot, r - y_dot);
+            d2 = hypot_smp(2 * r - x_dot, y_dot);
             if (d1 < r && d2 >= 2 * r)
                 ++inside;
         }
@@ -82,7 +85,7 @@ int main()
      * /8))-0.5*sin(2*pi-2*arccos(-sqrt(2)/4)))*r*r
      * =14.638125953034784
      */
-    double size = monte_carlo(UINT64_C(5), UINT64_C(1000000000));
+    double size = monte_carlo(5.0, UINT64_C(1000000000));
     printf("%g\n", size);
     return 0;
 }

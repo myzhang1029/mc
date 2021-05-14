@@ -51,8 +51,8 @@ uint64_t monte_carlo_core(double r, uint64_t startpoint, uint64_t endpoint)
         {
             x_dot = pcg32_rand(&thrd_rngx)/(double)UINT32_MAX * rmax;
             y_dot = pcg32_rand(&thrd_rngy)/(double)UINT32_MAX * rmax;
-            d1 = hypot(r - x_dot, r - y_dot);
-            d2 = hypot(2 * r - x_dot, y_dot);
+            d1 = hypot_smp(r - x_dot, r - y_dot);
+            d2 = hypot_smp(2 * r - x_dot, y_dot);
             if (d1 < r && d2 >= 2 * r)
                 ++inside;
         }
