@@ -8,14 +8,16 @@ build:
     - apt-get update
     - apt-get -y install gcc mpich
   script:
-    - gcc -Ofast -fopenmp -ffast-math -o mc_func mc_func.c -lm
-    - mpicc -Ofast -ffast-math -o mc_func_mpi mc_func_mpi.c
-    - gcc -Ofast -fopenmp -ffast-math -o mc_hypot mc_hypot.c -lm
+    - gcc -Ofast -fopenmp -o mc_func mc_func.c -lm
+    - mpicc -Ofast -o mc_func_mpi mc_func.c -DUSE_MPI -lm
+    - gcc -Ofast -fopenmp -o mc_hypot mc_hypot.c -lm
+    - mpicc -Ofast -o mc_hypot_mpi mc_hypot.c -DUSE_MPI -lm
   artifacts:
     paths:
       - mc_func
       - mc_func_mpi
       - mc_hypot
+      - mc_hypot_mpi
 
 test:
   stage: test
@@ -24,5 +26,6 @@ test:
     - apt-get install -y mpich time
   script:
     - /usr/bin/time ./mc_func
-    - mpiexec -n 4 ./mc_func_mpi
+    - /usr/bin/time mpiexec -n 4 ./mc_func_mpi
     - /usr/bin/time ./mc_hypot
+    - /usr/bin/time mpiexec -n 4 ./mc_hypot_mpi
