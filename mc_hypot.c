@@ -9,7 +9,7 @@
 // This line significantly speeds things up - with a very low risk of overflow
 static inline double hypot_smp(double a, double b)
 {
-    return sqrt(a * a + b * b);
+    return sqrt(fma(a, a, b * b));
 }
 
 // The area can be obtained with inside / rand_samples * 4 * radius * radius

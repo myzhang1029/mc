@@ -1,0 +1,36 @@
+Use of fma() in place of x * y + z:
+Tested with Apple clang version 12.0.5 (clang-1205.0.22.9) on arm64-apple-darwin20.4.0
+Using fixed deterministic seeds 42 and 430, 1280000000 samples, single sequence for x, y
+
+Without:
+$ time ./a.out
+187376732/1280000000
+14.6388
+./a.out  11.94s user 0.02s system 84% cpu 14.226 total
+
+$ time ./a.out
+187376732/1280000000
+14.6388
+./a.out  11.88s user 0.02s system 87% cpu 13.662 total
+
+$ time ./a.out
+187376732/1280000000
+14.6388
+./a.out  11.94s user 0.02s system 87% cpu 13.650 total
+
+With:
+$ time ./a.out
+187376732/1280000000
+14.6388
+./a.out  11.63s user 0.02s system 78% cpu 14.912 total
+
+$ time ./a.out
+187376732/1280000000
+14.6388
+./a.out  11.67s user 0.03s system 88% cpu 13.239 total
+
+$ time ./a.out
+187376732/1280000000
+14.6388
+./a.out  11.59s user 0.03s system 86% cpu 13.387 total
+
