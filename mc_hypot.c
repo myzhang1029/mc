@@ -7,19 +7,18 @@
 #include "pcg_impl/pcg.h"
 
 // This line significantly speeds things up - with a very low risk of overflow
-static inline double hypot_smp(double a, double b)
+static inline double hypot_smp(const double a, const double b)
 {
     return sqrt(fma(a, a, b * b));
 }
 
 // The area can be obtained with inside / rand_samples * 4 * radius * radius
-uint64_t monte_carlo(double radius, uint64_t rand_samples)
+uint64_t monte_carlo(const double radius, const uint64_t rand_samples)
 {
-    double r = radius * rand_samples;
+    const double r = radius * rand_samples;
     const double rmax = 2 * r + 1;
     /* Scale onto the generated random number */
     const double scale = ldexp(rmax, -32);
-    uint64_t i;
     /* Avoid data race */
     _Atomic uint64_t inside = 0;
 
@@ -27,6 +26,7 @@ uint64_t monte_carlo(double radius, uint64_t rand_samples)
     {
         double x_dot, y_dot;
         double d1, d2;
+        uint64_t i;
         pcg32_random_t thrd_rng;
         pcg32_srand(&thrd_rng, UINT64_C(42), UINT64_C(430));
 #pragma omp for
