@@ -1,0 +1,36 @@
+hardware: Apple M1 MacBook Pro
+uname -s: Darwin Kernel Version 20.4.0: Thu Apr 22 21:46:41 PDT 2021; root:xnu-7195.101.2~1/RELEASE_ARM64_T8101
+compiler: clang version 12.0.0 Target: arm64-apple-darwin20.4.0
+git hash: efb9932
+
+hypot 1E+9
+146381935/1000000000
+./mc  7.37s user 0.03s system 779% cpu 0.949 total
+146395277/1000000000
+./mc  7.24s user 0.05s system 779% cpu 0.936 total
+146380319/1000000000
+./mc  7.26s user 0.08s system 772% cpu 0.950 total
+
+hypot 1E+10
+1463844916/10000000000
+./mc  72.14s user 0.17s system 790% cpu 9.142 total
+1463791373/10000000000
+./mc  71.90s user 0.12s system 791% cpu 9.096 total
+1463777664/10000000000
+./mc  72.00s user 0.18s system 791% cpu 9.123 total
+
+hypot 1E+11
+14638293800/100000000000
+./mc  719.29s user 1.16s system 792% cpu 1:30.92 total
+14638004505/100000000000
+./mc  718.84s user 1.07s system 791% cpu 1:30.91 total
+14638123057/100000000000
+./mc  718.99s user 1.18s system 792% cpu 1:30.89 total
+
+hypot 1E+12
+146381153565/1000000000000
+./mc  7173.43s user 10.41s system 784% cpu 15:15.64 total
+146381462678/1000000000000
+./mc  7179.41s user 10.16s system 786% cpu 15:13.54 total
+146380537689/1000000000000
+./mc  7180.29s user 10.38s system 787% cpu 15:13.20 total

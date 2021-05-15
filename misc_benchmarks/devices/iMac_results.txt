@@ -1,0 +1,36 @@
+hardware: Apple iMac
+uname -s: Darwin Kernel Version 20.3.0: Thu Jan 21 00:07:06 PST 2021; root:xnu-7195.81.3~1/RELEASE_X86_64
+compiler: clang version 12.0.0 Target: x86_64-apple-darwin20.3.0
+git hash: efb9932
+
+hypot 1E+9
+146399836/1000000000
+./mc  9.04s user 0.00s system 397% cpu 2.275 total
+146385154/1000000000
+./mc  9.04s user 0.00s system 397% cpu 2.277 total
+146373671/1000000000
+./mc  9.04s user 0.00s system 397% cpu 2.273 total
+
+hypot 1E+10
+1463759105/10000000000
+./mc  99.62s user 0.04s system 395% cpu 25.170 total
+1463806097/10000000000
+./mc  99.71s user 0.04s system 395% cpu 25.194 total
+1463788351/10000000000
+./mc  99.64s user 0.03s system 397% cpu 25.048 total
+
+hypot 1E+11
+14638140336/100000000000
+./mc  996.27s user 0.35s system 396% cpu 4:11.47 total
+14638120540/100000000000
+./mc  996.54s user 0.44s system 395% cpu 4:11.85 total
+14637957960/100000000000
+./mc  996.38s user 0.35s system 396% cpu 4:11.44 total
+
+hypot 1E+12
+146381416826/1000000000000
+./mc  9961.61s user 3.58s system 396% cpu 41:55.25 total
+146381165156/1000000000000
+./mc  9961.79s user 3.58s system 396% cpu 41:56.36 total
+146381733251/1000000000000
+./mc  9961.69s user 3.76s system 395% cpu 42:00.76 total
