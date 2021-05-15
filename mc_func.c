@@ -119,23 +119,6 @@ int main(int argc, char **argv)
 
 int main()
 {
-    /* Algorithm efficiency:
-     * result: avg 3, effective rounding
-     * samp result(avg)    timing(one)
-     * 1e6  146286.0(3)         0.03s user 0.00s system 238% cpu 0.013 total
-     * 1e7  1463853.7(3)        0.28s user 0.00s system 351% cpu 0.081 total
-     * 1e8  14633653.3(3)       2.84s user 0.00s system 383% cpu 0.741 total
-     * 1e9  146382682.0(3)     28.29s user 0.04s system 386% cpu 7.323 total
-     * 1e10 1463808882.7(3)   275.08s user 0.61s system 317% cpu 1:26.79 total
-     * 1e11 14638184449.0(2) 2834.62s user 3.75s system 377% cpu 12:32.64 total
-     * 1e12 146381275885(1) 28990.61s user 35.68s system 367% cpu 2:11:39.73
-     * total
-     *
-     * accur:
-     * (pi-arccos(-sqrt(2)/4)-4*arccos(5*sqrt(2)/8)+2*sin(2*arccos(5*sqrt(2)
-     * /8))-0.5*sin(2*pi-2*arccos(-sqrt(2)/4)))*r*r
-     * =14.638125953034784
-     */
     double radius = 5.0;
     uint64_t rand_samples = UINT64_C(1000000000);
     uint64_t inside = monte_carlo(radius, rand_samples);
