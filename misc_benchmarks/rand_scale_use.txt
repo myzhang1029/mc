@@ -1,4 +1,4 @@
-Use of fma() in place of x * y + z:
+Factor out 1/UINT32_MAX*rmax as const ldexp(rmax, -32)
 Tested with Apple clang version 12.0.5 (clang-1205.0.22.9) on arm64-apple-darwin20.4.0
 Using fixed deterministic seeds 42 and 430, 1280000000 samples, single sequence for x, y
 
@@ -6,30 +6,26 @@ Without:
 $ time ./a.out
 187376732/1280000000
 14.6388
-./a.out  11.94s user 0.02s system 84% cpu 14.226 total
-
+./a.out  11.56s user 0.03s system 86% cpu 13.347 total
 $ time ./a.out
 187376732/1280000000
 14.6388
-./a.out  11.88s user 0.02s system 87% cpu 13.662 total
-
+./a.out  11.57s user 0.03s system 88% cpu 13.135 total
 $ time ./a.out
 187376732/1280000000
 14.6388
-./a.out  11.94s user 0.02s system 87% cpu 13.650 total
+./a.out  11.51s user 0.03s system 87% cpu 13.129 total
 
 With:
 $ time ./a.out
 187376732/1280000000
 14.6388
-./a.out  11.63s user 0.02s system 78% cpu 14.912 total
-
+./a.out  9.54s user 0.03s system 88% cpu 10.868 total
 $ time ./a.out
 187376732/1280000000
 14.6388
-./a.out  11.67s user 0.03s system 88% cpu 13.239 total
-
+./a.out  10.33s user 0.04s system 84% cpu 12.331 total
 $ time ./a.out
 187376732/1280000000
 14.6388
-./a.out  11.59s user 0.03s system 86% cpu 13.387 total
+./a.out  10.29s user 0.03s system 86% cpu 11.956 total

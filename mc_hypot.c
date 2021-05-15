@@ -16,7 +16,9 @@ static inline double hypot_smp(double a, double b)
 uint64_t monte_carlo(double radius, uint64_t rand_samples)
 {
     double r = radius * rand_samples;
-    double rmax = 2 * r + 1;
+    const double rmax = 2 * r + 1;
+    /* Scale onto the generated random number */
+    const double scale = ldexp(rmax, -32);
     uint64_t i;
     /* Avoid data race */
     _Atomic uint64_t inside = 0;
@@ -30,8 +32,8 @@ uint64_t monte_carlo(double radius, uint64_t rand_samples)
 #pragma omp for
         for (i = 0; i < rand_samples; ++i)
         {
-            x_dot = pcg32_rand(&thrd_rng) / (double)UINT32_MAX * rmax;
-            y_dot = pcg32_rand(&thrd_rng) / (double)UINT32_MAX * rmax;
+            x_dot = pcg32_rand(&thrd_rng) * scale;
+            y_dot = pcg32_rand(&thrd_rng) * scale;
             d1 = hypot_smp(r - x_dot, r - y_dot);
             d2 = hypot_smp(2 * r - x_dot, y_dot);
             if (d1 < r && d2 >= 2 * r)
