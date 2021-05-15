@@ -1,6 +1,5 @@
 #include <inttypes.h>
 #include <math.h>
-#include <stdatomic.h>
 #include <stdint.h>
 #include <stdio.h>
 
@@ -14,29 +13,28 @@ typedef __uint128_t bigint;
 typedef double bigint;
 #endif
 
-static inline double y1_upper(bigint x, uint64_t r)
+static inline double y1_upper(const bigint x, const uint64_t r)
 {
     return r + sqrt(2 * x * r - x * x);
 }
 
-static inline double y1_lower(bigint x, uint64_t r)
+static inline double y1_lower(const bigint x, const uint64_t r)
 {
     return r - sqrt(2 * x * r - x * x);
 }
 
-static inline double y2(bigint x, uint64_t r)
+static inline double y2(const bigint x, const uint64_t r)
 {
     return sqrt(4 * x * r - x * x);
 }
 
 // The area can be obtained with inside / rand_samples * 4 * radius * radius
-uint64_t monte_carlo(uint32_t radius, uint64_t rand_samples)
+uint64_t monte_carlo(const uint32_t radius, const uint64_t rand_samples)
 {
-    uint64_t r = radius * rand_samples;
-    uint64_t rmax = 2 * r + 1;
+    const uint64_t r = radius * rand_samples;
+    const uint64_t rmax = 2 * r + 1;
     uint64_t i;
-    /* Avoid data race */
-    _Atomic uint64_t inside = 0;
+    uint64_t inside = 0;
     /* Compile time */
     const double q3msqrt7 = (3 - sqrt(7)) / 4.0, q3asqrt7 = (3 + sqrt(7)) / 4.0;
 
@@ -50,7 +48,7 @@ uint64_t monte_carlo(uint32_t radius, uint64_t rand_samples)
         pcg32x2_random_t thrd_rngx, thrd_rngy;
         pcg32x2_srand(&thrd_rngx, UINT64_C(42), UINT64_C(430));
         pcg32x2_srand(&thrd_rngy, UINT64_C(42), UINT64_C(431));
-#pragma omp for
+#pragma omp for reduction(+ : inside)
         for (i = 0; i < rand_samples; ++i)
         {
             x_dot = pcg32x2_uniform(&thrd_rngx, rmax);
@@ -62,10 +60,10 @@ uint64_t monte_carlo(uint32_t radius, uint64_t rand_samples)
             if (0 <= x_dot && x_dot < r * q3msqrt7)
                 if (yl <= y_dot && y_dot < yu)
                     ++inside;
-            /* right segment */
-            if (r * q3msqrt7 <= x_dot && x_dot < r * q3asqrt7)
-                if (yt <= y_dot && y_dot < yu)
-                    ++inside;
+                /* right segment */
+                else if (r * q3msqrt7 <= x_dot && x_dot < r * q3asqrt7)
+                    if (yt <= y_dot && y_dot < yu)
+                        ++inside;
         }
     }
     return inside;
