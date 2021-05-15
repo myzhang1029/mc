@@ -5,14 +5,14 @@
 /* mc kernel function */
 kernel void monte_carlo(
     /* Calculate parameter */
-    double scaled_radius,
+    float scaled_radius,
     /* Array of results */
     global uchar *results,
     /* Modulo for results because memory might be limited to fit all samples */
     uint32_t modulo)
 {
-    double rmax;
-    double x_dot, y_dot, d1, d2;
+    float rmax;
+    float x_dot, y_dot, d1, d2;
     pcg32_random_t rng;
     size_t rank = get_global_id(0);
 
@@ -20,8 +20,8 @@ kernel void monte_carlo(
     pcg32_srand(&rng, 42UL, 430UL);
     /* Skip "previous" workers */
     pcg32_advance(&rng, rank * 2);
-    x_dot = pcg32_rand(&rng) / (double)UINT_MAX * rmax;
-    y_dot = pcg32_rand(&rng) / (double)UINT_MAX * rmax;
+    x_dot = pcg32_rand(&rng) / (float)UINT_MAX * rmax;
+    y_dot = pcg32_rand(&rng) / (float)UINT_MAX * rmax;
     d1 = hypot(scaled_radius - x_dot, scaled_radius - y_dot);
     d2 = hypot(2 * scaled_radius - x_dot, y_dot);
     /* Store & Return */

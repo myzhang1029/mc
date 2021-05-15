@@ -20,10 +20,9 @@
 
 int main(void)
 {
-    const double r = 5.0f;
+    const float r = 5.0f;
     unsigned long rand_samples = 1280000000ul;
-    unsigned long each;
-    unsigned long inside = 12;
+    unsigned long inside = 0;
     cl_platform_id *plats;
     cl_device_id **devices;
     cl_device_id to_use;
@@ -86,7 +85,7 @@ int main(void)
     CHECK_ERROR("Error creating buffer\n");
 
     /* radius */
-    stat = clSetKernelArg(kernel, 0, sizeof(double), (void *)&r);
+    stat = clSetKernelArg(kernel, 0, sizeof(float), (void *)&r);
     /* The output list */
     stat |= clSetKernelArg(kernel, 1, sizeof(cl_mem), (void *)&outmem);
     /* Size of outmem as modulo */
