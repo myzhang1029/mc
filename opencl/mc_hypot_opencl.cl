@@ -1,3 +1,5 @@
+#define uint64_t ulong
+#define uint32_t uint
 #include "../pcg_impl/pcg.h"
 
 /* mc kernel function */

@@ -1,4 +1,7 @@
+#ifndef uint64_t
 #include <stdint.h>
+#endif
+
 #define INLINE static inline
 
 /* PCG generator
@@ -28,7 +31,8 @@ INLINE uint32_t pcg32_rand(pcg32_random_t *rng)
     return (xorshifted >> rot) | (xorshifted << ((-rot) & 31));
 }
 
-INLINE void pcg32_srand(pcg32_random_t *rng, uint64_t initstate, uint64_t initseq)
+INLINE void pcg32_srand(pcg32_random_t *rng, uint64_t initstate,
+                        uint64_t initseq)
 {
     rng->state = 0U;
     rng->inc = (initseq << 1u) | 1u;
@@ -59,7 +63,8 @@ INLINE void pcg32_advance(pcg32_random_t *rng, uint64_t delta)
     rng->state = acc_mult * rng->state + acc_plus;
 }
 
-INLINE void pcg32x2_srand(pcg32x2_random_t *rng, uint64_t initstates, uint64_t initseqs)
+INLINE void pcg32x2_srand(pcg32x2_random_t *rng, uint64_t initstates,
+                          uint64_t initseqs)
 {
     pcg32_srand(rng->gen, initstates, initseqs);
     pcg32_srand(rng->gen + 1, initstates, initseqs + 1);
@@ -82,4 +87,3 @@ INLINE uint64_t pcg32x2_uniform(pcg32x2_random_t *rng, uint64_t bound)
 }
 
 /* End PCG generator */
-

@@ -34,7 +34,6 @@ int main(void)
     cl_kernel kernel;
     cl_int stat;
     char *prog;
-    size_t proglen[1];
     cl_uchar *results;
     unsigned long wgsize;
     const char *filename = "mc_hypot_opencl.cl";
@@ -57,10 +56,9 @@ int main(void)
 
     /* Load program */
     prog = file2str(filename);
-    proglen[0] = strlen(prog);
 
     program =
-        clCreateProgramWithSource(ctx, 1, (const char **)&prog, proglen, &stat);
+        clCreateProgramWithSource(ctx, 1, (const char **)&prog, NULL, &stat);
     stat |= clBuildProgram(program, 1, &to_use, "-Werror", NULL, NULL);
     if (stat != CL_SUCCESS)
     {
