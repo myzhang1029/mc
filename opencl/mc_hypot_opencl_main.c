@@ -80,7 +80,7 @@ int main(void)
     results = malloc(sizeof(cl_uchar) * rand_samples);
 
     /* Prepare parameters */
-    outmem = clCreateBuffer(ctx, CL_MEM_WRITE_ONLY, sizeof(bool) * rand_samples,
+    outmem = clCreateBuffer(ctx, CL_MEM_WRITE_ONLY, sizeof(cl_uchar) * rand_samples,
                             NULL, &stat);
     CHECK_ERROR("Error creating buffer\n");
 
