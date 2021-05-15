@@ -1,6 +1,5 @@
 #include <inttypes.h>
 #include <math.h>
-#include <omp.h>
 #include <stdint.h>
 #include <stdio.h>
 
