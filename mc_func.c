@@ -57,13 +57,12 @@ uint64_t monte_carlo(const uint32_t radius, const uint64_t rand_samples)
             yl = y1_lower(x_dot, r);
             yt = y2(x_dot, r);
             /* left segment */
-            if (0 <= x_dot && x_dot < r * q3msqrt7)
-                if (yl <= y_dot && y_dot < yu)
-                    ++inside;
-                /* right segment */
-                else if (r * q3msqrt7 <= x_dot && x_dot < r * q3asqrt7)
-                    if (yt <= y_dot && y_dot < yu)
-                        ++inside;
+            if (x_dot < r * q3msqrt7 && yl <= y_dot && y_dot < yu)
+                ++inside;
+            /* right segment */
+            else if (r * q3msqrt7 <= x_dot && x_dot < r * q3asqrt7 &&
+                     yt <= y_dot && y_dot < yu)
+                ++inside;
         }
     }
     return inside;
