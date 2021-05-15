@@ -1,6 +1,6 @@
 #include <inttypes.h>
 #include <math.h>
-#include <stdatomic.h>
+#include <omp.h>
 #include <stdint.h>
 #include <stdio.h>
 
@@ -19,8 +19,7 @@ uint64_t monte_carlo(const double radius, const uint64_t rand_samples)
     const double rmax = 2 * r + 1;
     /* Scale onto the generated random number */
     const double scale = ldexp(rmax, -32);
-    /* Avoid data race */
-    _Atomic uint64_t inside = 0;
+    uint64_t inside = 0;
 
 #pragma omp parallel
     {
@@ -29,7 +28,7 @@ uint64_t monte_carlo(const double radius, const uint64_t rand_samples)
         uint64_t i;
         pcg32_random_t thrd_rng;
         pcg32_srand(&thrd_rng, UINT64_C(42), UINT64_C(430));
-#pragma omp for
+#pragma omp for reduction(+ : inside)
         for (i = 0; i < rand_samples; ++i)
         {
             x_dot = pcg32_rand(&thrd_rng) * scale;
