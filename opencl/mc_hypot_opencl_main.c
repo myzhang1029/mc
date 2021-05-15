@@ -20,8 +20,9 @@
 
 int main(void)
 {
+    const unsigned long rand_samples = 1280000000ul;
     const float r = 5.0f;
-    unsigned long rand_samples = 1280000000ul;
+    const float scaled_r = r * rand_samples;
     unsigned long inside = 0;
     cl_platform_id *plats;
     cl_device_id **devices;
@@ -80,12 +81,12 @@ int main(void)
     results = malloc(sizeof(cl_uchar) * rand_samples);
 
     /* Prepare parameters */
-    outmem = clCreateBuffer(ctx, CL_MEM_WRITE_ONLY, sizeof(cl_uchar) * rand_samples,
-                            NULL, &stat);
+    outmem = clCreateBuffer(ctx, CL_MEM_WRITE_ONLY,
+                            sizeof(cl_uchar) * rand_samples, NULL, &stat);
     CHECK_ERROR("Error creating buffer\n");
 
     /* radius */
-    stat = clSetKernelArg(kernel, 0, sizeof(float), (void *)&r);
+    stat = clSetKernelArg(kernel, 0, sizeof(float), (void *)&scaled_r);
     /* The output list */
     stat |= clSetKernelArg(kernel, 1, sizeof(cl_mem), (void *)&outmem);
     /* Size of outmem as modulo */

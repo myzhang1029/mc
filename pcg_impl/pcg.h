@@ -32,7 +32,7 @@ ST_INLINE uint32_t pcg32_rand(pcg32_random_t *rng)
 }
 
 ST_INLINE void pcg32_srand(pcg32_random_t *rng, uint64_t initstate,
-                        uint64_t initseq)
+                           uint64_t initseq)
 {
     rng->state = 0U;
     rng->inc = (initseq << 1u) | 1u;
@@ -64,7 +64,7 @@ ST_INLINE void pcg32_advance(pcg32_random_t *rng, uint64_t delta)
 }
 
 ST_INLINE void pcg32x2_srand(pcg32x2_random_t *rng, uint64_t initstates,
-                          uint64_t initseqs)
+                             uint64_t initseqs)
 {
     pcg32_srand(rng->gen, initstates, initseqs);
     pcg32_srand(rng->gen + 1, initstates, initseqs + 1);
