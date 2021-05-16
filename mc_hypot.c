@@ -26,14 +26,15 @@ uint64_t monte_carlo(const double radius, const uint64_t rand_samples)
     {
         double x_dot, y_dot;
         double sqd1, sqd2;
+        pcg32_random_t thrd_rngx, thrd_rngy;
         uint64_t i;
-        pcg32_random_t thrd_rng;
-        pcg32_srand(&thrd_rng, UINT64_C(42), UINT64_C(430));
+        pcg32_srand(&thrd_rngx, UINT64_C(42), UINT64_C(430));
+        pcg32_srand(&thrd_rngy, UINT64_C(42), UINT64_C(431));
 #pragma omp for reduction(+ : inside)
         for (i = 0; i < rand_samples; ++i)
         {
-            x_dot = pcg32_rand(&thrd_rng) * scale;
-            y_dot = pcg32_rand(&thrd_rng) * scale;
+            x_dot = pcg32_rand(&thrd_rngx) * scale;
+            y_dot = pcg32_rand(&thrd_rngy) * scale;
             sqd1 = sqhypot(r - x_dot, r - y_dot);
             sqd2 = sqhypot(2 * r - x_dot, y_dot);
             if (sqd1 < sqr && sqd2 >= 4 * sqr)
