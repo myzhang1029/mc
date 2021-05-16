@@ -1,5 +1,7 @@
 # Prerequisites
 *.d
+mc_hypot_opencl.cli
+prog.h
 
 # Object files
 *.o
