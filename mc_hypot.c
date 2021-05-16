@@ -5,16 +5,18 @@
 
 #include "pcg_impl/pcg.h"
 
-// This line significantly speeds things up - with a very low risk of overflow
-static inline double hypot_smp(const double a, const double b)
+// This function significantly speeds things up - with a very low risk of overflow
+// Always positive
+static inline double sqhypot(const double a, const double b)
 {
-    return sqrt(fma(a, a, b * b));
+    return fma(a, a, b * b);
 }
 
 // The area can be obtained with inside / rand_samples * 4 * radius * radius
 uint64_t monte_carlo(const double radius, const uint64_t rand_samples)
 {
     const double r = radius * rand_samples;
+    const double sqr = r * r;
     const double rmax = 2 * r + 1;
     /* Scale onto the generated random number */
     const double scale = ldexp(rmax, -32);
@@ -23,7 +25,7 @@ uint64_t monte_carlo(const double radius, const uint64_t rand_samples)
 #pragma omp parallel
     {
         double x_dot, y_dot;
-        double d1, d2;
+        double sqd1, sqd2;
         uint64_t i;
         pcg32_random_t thrd_rng;
         pcg32_srand(&thrd_rng, UINT64_C(42), UINT64_C(430));
@@ -32,9 +34,9 @@ uint64_t monte_carlo(const double radius, const uint64_t rand_samples)
         {
             x_dot = pcg32_rand(&thrd_rng) * scale;
             y_dot = pcg32_rand(&thrd_rng) * scale;
-            d1 = hypot_smp(r - x_dot, r - y_dot);
-            d2 = hypot_smp(2 * r - x_dot, y_dot);
-            if (d1 < r && d2 >= 2 * r)
+            sqd1 = sqhypot(r - x_dot, r - y_dot);
+            sqd2 = sqhypot(2 * r - x_dot, y_dot);
+            if (sqd1 < sqr && sqd2 >= 4 * sqr)
                 ++inside;
         }
     }
