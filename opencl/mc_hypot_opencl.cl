@@ -12,7 +12,7 @@ kernel void monte_carlo(
     /* Calculate parameter */
     float scaled_radius,
     /* Array of results */
-    global uchar *results,
+    global uint *results,
     /* Modulo for results because memory might be limited to fit all samples */
     uint32_t modulo)
 {
@@ -36,7 +36,5 @@ kernel void monte_carlo(
     sqd2 = sqhypot(2 * scaled_radius - x_dot, y_dot);
     /* Store & Return */
     if (sqd1 < sqr && sqd2 >= 4 * sqr)
-        results[rank % modulo] = 1;
-    else
-        results[rank % modulo] = 0;
+        atomic_inc(results + rank % modulo);
 }

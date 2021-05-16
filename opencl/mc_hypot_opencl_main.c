@@ -22,7 +22,8 @@
 
 int main(void)
 {
-    const unsigned long rand_samples = 1280000000ul;
+    const unsigned long rand_samples = 4294967040ul;
+    const size_t memsize = 128000;
     const float r = 5.0f;
     const float scaled_r = r * rand_samples;
     unsigned long inside = 0;
@@ -35,7 +36,7 @@ int main(void)
     cl_mem outmem;
     cl_kernel kernel;
     cl_int stat;
-    cl_uchar *results;
+    cl_uint *results;
     unsigned long wgsize;
 
     plats = get_platforms();
@@ -75,11 +76,11 @@ int main(void)
                                     sizeof(wgsize), &wgsize, NULL);
     CHECK_ERROR("Error retrieving kernel work group info\n");
 
-    results = malloc(sizeof(cl_uchar) * rand_samples);
+    results = calloc(memsize, sizeof(cl_uint));
 
     /* Prepare parameters */
-    outmem = clCreateBuffer(ctx, CL_MEM_WRITE_ONLY,
-                            sizeof(cl_uchar) * rand_samples, NULL, &stat);
+    outmem = clCreateBuffer(ctx, CL_MEM_WRITE_ONLY | CL_MEM_COPY_HOST_PTR,
+                            sizeof(cl_uint) * memsize, results, &stat);
     CHECK_ERROR("Error creating buffer\n");
 
     /* radius */
@@ -88,7 +89,7 @@ int main(void)
     stat |= clSetKernelArg(kernel, 1, sizeof(cl_mem), (void *)&outmem);
     /* Size of outmem as modulo */
     stat |=
-        clSetKernelArg(kernel, 2, sizeof(unsigned int), (void *)&rand_samples);
+        clSetKernelArg(kernel, 2, sizeof(unsigned int), (void *)&memsize);
     CHECK_ERROR("Error setting args\n");
     /* Issue calls */
     stat = clEnqueueNDRangeKernel(cq, kernel, 1, NULL, &rand_samples, &wgsize,
@@ -97,10 +98,10 @@ int main(void)
     /* Wait all */
     clFinish(cq);
     stat = clEnqueueReadBuffer(cq, outmem, CL_TRUE, 0,
-                               sizeof(cl_uchar) * rand_samples, results, 0,
+                               sizeof(cl_uint) * memsize, results, 0,
                                NULL, NULL);
     CHECK_ERROR("Error reading output array\n");
-    for (size_t i = 0; i < rand_samples; ++i)
+    for (size_t i = 0; i < memsize; ++i)
     {
         inside += results[i];
     }

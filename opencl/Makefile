@@ -1,12 +1,15 @@
 CFLAGS:=-Wall -Wextra -Ofast
 LDFLAGS:=-lcl
 
-.PHONY: all clean
+.PHONY: all clean run
 
 all: mc
 
 clean:
 	rm -f mc_hypot_opencl.cli prog.h mc
+
+run: mc
+	./mc
 
 mc_hypot_opencl.cli: mc_hypot_opencl.cl
 	$(CC) -E -o $@ $<
