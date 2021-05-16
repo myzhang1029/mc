@@ -5,8 +5,8 @@
 
 #include "pcg_impl/pcg.h"
 
-// This function significantly speeds things up - with a very low risk of overflow
-// Always positive
+// This function significantly speeds things up - with a very low risk of
+// overflow Always positive
 static inline double sqhypot(const double a, const double b)
 {
     return fma(a, a, b * b);

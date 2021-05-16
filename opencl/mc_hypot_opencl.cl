@@ -2,6 +2,11 @@
 #define uint32_t uint
 #include "../pcg_impl/pcg.h"
 
+static inline float sqhypot(const float a, const float b)
+{
+    return fma(a, a, b * b);
+}
+
 /* mc kernel function */
 kernel void monte_carlo(
     /* Calculate parameter */
@@ -11,21 +16,26 @@ kernel void monte_carlo(
     /* Modulo for results because memory might be limited to fit all samples */
     uint32_t modulo)
 {
-    float rmax;
-    float x_dot, y_dot, d1, d2;
-    pcg32_random_t rng;
+    const float sqr = scaled_radius * scaled_radius;
+    const float rmax = 2 * scaled_radius + 1;
+    /* Scale onto the generated random number */
+    const float scale = ldexp(rmax, -32);
     size_t rank = get_global_id(0);
 
-    rmax = 2 * scaled_radius + 1;
+    float x_dot, y_dot, sqd1, sqd2;
+    pcg32_random_t rng;
+
     pcg32_srand(&rng, 42UL, 430UL);
     /* Skip "previous" workers */
     pcg32_advance(&rng, rank * 2);
-    x_dot = pcg32_rand(&rng) / (float)UINT_MAX * rmax;
-    y_dot = pcg32_rand(&rng) / (float)UINT_MAX * rmax;
-    d1 = hypot(scaled_radius - x_dot, scaled_radius - y_dot);
-    d2 = hypot(2 * scaled_radius - x_dot, y_dot);
+
+    x_dot = pcg32_rand(&rng) * scale;
+    y_dot = pcg32_rand(&rng) * scale;
+
+    sqd1 = sqhypot(scaled_radius - x_dot, scaled_radius - y_dot);
+    sqd2 = sqhypot(2 * scaled_radius - x_dot, y_dot);
     /* Store & Return */
-    if (d1 < scaled_radius && d2 >= 2 * scaled_radius)
+    if (sqd1 < sqr && sqd2 >= 4 * sqr)
         results[rank % modulo] = 1;
     else
         results[rank % modulo] = 0;
