@@ -18,6 +18,7 @@
 #pragma OPENCL EXTENSION cl_khr_global_int32_base_atomics : enable
 #define uint64_t ulong
 #define uint32_t uint
+#define UINT64_C(c) (c##UL)
 #include "../pcg_impl/pcg.h"
 
 static inline float sqhypot(const float a, const float b)

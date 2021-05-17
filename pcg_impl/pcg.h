@@ -24,18 +24,18 @@ ST_INLINE uint32_t pcg32_rand(pcg32_random_t *rng)
 {
     uint64_t oldstate = rng->state;
     // Advance internal state
-    rng->state = oldstate * 6364136223846793005ULL + (rng->inc | 1);
+    rng->state = oldstate * UINT64_C(6364136223846793005) + (rng->inc | UINT64_C(1));
     // Calculate output function (XSH RR), uses old state for max ILP
     uint32_t xorshifted = ((oldstate >> 18u) ^ oldstate) >> 27u;
     uint32_t rot = oldstate >> 59u;
-    return (xorshifted >> rot) | (xorshifted << ((-rot) & 31));
+    return (xorshifted >> rot) | (xorshifted << ((-rot) & UINT64_C(31)));
 }
 
 ST_INLINE void pcg32_srand(pcg32_random_t *rng, uint64_t initstate,
                            uint64_t initseq)
 {
-    rng->state = 0U;
-    rng->inc = (initseq << 1u) | 1u;
+    rng->state = UINT64_C(0);
+    rng->inc = (initseq << 1u) | UINT64_C(1);
     pcg32_rand(rng);
     rng->state += initstate;
     pcg32_rand(rng);
@@ -44,9 +44,9 @@ ST_INLINE void pcg32_srand(pcg32_random_t *rng, uint64_t initstate,
 // Derived from PCG's pcg_setseq_64_advance_r and pcg_advance_lcg_64
 ST_INLINE void pcg32_advance(pcg32_random_t *rng, uint64_t delta)
 {
-    uint64_t acc_mult = 1u;
-    uint64_t acc_plus = 0u;
-    uint64_t cur_mult = 6364136223846793005ULL;
+    uint64_t acc_mult = UINT64_C(1);
+    uint64_t acc_plus = UINT64_C(0);
+    uint64_t cur_mult = UINT64_C(6364136223846793005);
     uint64_t cur_plus = rng->inc;
 
     while (delta > 0)
