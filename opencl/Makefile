@@ -1,5 +1,5 @@
 CFLAGS:=-Wall -Wextra -Ofast
-LDFLAGS:=-lcl
+LDFLAGS:=-lOpenCL
 
 .PHONY: all clean run
 
@@ -12,7 +12,7 @@ run: mc
 	./mc
 
 mc_hypot_opencl.cli: mc_hypot_opencl.cl
-	$(CC) -E -o $@ $<
+	$(CC) -x c -E -o $@ $<
 
 prog.h: mc_hypot_opencl.cli
 	echo "static const char * prog = " > $@
