@@ -39,8 +39,8 @@
 
 int main(void)
 {
-    const size_t rand_samples = 4294967295ull;
-    const size_t memsize = 128000;
+    const size_t rand_samples = 1ull << 32 - 1ull;
+    const cl_ulong memsize = 128000u;
     const float r = 5.0f;
     const float scaled_r = r * rand_samples;
     size_t inside = 0;
@@ -99,7 +99,7 @@ int main(void)
     /* The output list */
     stat |= clSetKernelArg(kernel, 1, sizeof(cl_mem), (void *)&outmem);
     /* Size of outmem as modulo */
-    stat |= clSetKernelArg(kernel, 2, sizeof(size_t), (void *)&memsize);
+    stat |= clSetKernelArg(kernel, 2, sizeof(cl_ulong), (void *)&memsize);
     CHECK_ERROR("Error setting args\n");
     /* Issue calls */
     stat = clEnqueueNDRangeKernel(cq, kernel, 1, NULL, &rand_samples, NULL, 0,

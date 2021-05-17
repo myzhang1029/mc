@@ -33,7 +33,7 @@ kernel void monte_carlo(
     /* Array of results */
     global uint *results,
     /* Modulo for results because memory might be limited to fit all samples */
-    uint32_t modulo)
+    ulong modulo)
 {
     const float sqr = scaled_radius * scaled_radius;
     const float rmax = 2 * scaled_radius + 1;
