@@ -56,7 +56,6 @@ int print_platform_info(cl_platform_id platform)
     };
     for (i = 0; i < ntypes; ++i)
     {
-        stat = 0;
         stat = clGetPlatformInfo(platform, infotypes[i], 0, NULL, &paramsize);
         buf = xmalloc(paramsize * sizeof(char));
         stat |= clGetPlatformInfo(platform, infotypes[i], paramsize, buf, NULL);
@@ -85,6 +84,11 @@ cl_platform_id *get_platforms(void)
         cl_platform_id *platforms =
             (cl_platform_id *)xmalloc((num + 1) * sizeof(cl_platform_id));
         stat = clGetPlatformIDs(num, platforms, NULL);
+        if (stat != CL_SUCCESS)
+        {
+            fprintf(stderr, "Error getting platforms IDs!\n");
+            abort();
+        }
         printf("[INFO]: Got %d platform(s)\n", num);
         for (i = 0; i < num; ++i)
         {
@@ -117,7 +121,6 @@ int print_device_info(cl_device_id device)
     };
     for (i = 0; i < ntypes; ++i)
     {
-        stat = 0;
         stat = clGetDeviceInfo(device, infotypes[i], 0, NULL, &paramsize);
         buf = xmalloc(paramsize * sizeof(char));
         stat |= clGetDeviceInfo(device, infotypes[i], paramsize, buf, NULL);

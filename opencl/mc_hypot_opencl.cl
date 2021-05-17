@@ -1,3 +1,4 @@
+#pragma OPENCL EXTENSION cl_khr_global_int32_base_atomics : enable
 #define uint64_t ulong
 #define uint32_t uint
 #include "../pcg_impl/pcg.h"

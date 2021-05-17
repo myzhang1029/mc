@@ -22,11 +22,11 @@
 
 int main(void)
 {
-    const unsigned long rand_samples = 4294967040ul;
+    const size_t rand_samples = 4294967295ull;
     const size_t memsize = 128000;
     const float r = 5.0f;
     const float scaled_r = r * rand_samples;
-    unsigned long inside = 0;
+    size_t inside = 0;
     cl_platform_id *plats;
     cl_device_id **devices;
     cl_device_id to_use;
@@ -37,7 +37,6 @@ int main(void)
     cl_kernel kernel;
     cl_int stat;
     cl_uint *results;
-    unsigned long wgsize;
 
     plats = get_platforms();
     if (!plats)
@@ -55,8 +54,7 @@ int main(void)
     cq = clCreateCommandQueue(ctx, to_use, 0, &stat);
     CHECK_ERROR("Error creating command queue\n");
 
-    program =
-        clCreateProgramWithSource(ctx, 1, &prog, NULL, &stat);
+    program = clCreateProgramWithSource(ctx, 1, &prog, NULL, &stat);
     stat |= clBuildProgram(program, 1, &to_use, "-Werror", NULL, NULL);
     if (stat != CL_SUCCESS)
     {
@@ -72,10 +70,6 @@ int main(void)
     kernel = clCreateKernel(program, "monte_carlo", &stat);
     CHECK_ERROR("Error creating kernel\n");
 
-    stat = clGetKernelWorkGroupInfo(kernel, to_use, CL_KERNEL_WORK_GROUP_SIZE,
-                                    sizeof(wgsize), &wgsize, NULL);
-    CHECK_ERROR("Error retrieving kernel work group info\n");
-
     results = calloc(memsize, sizeof(cl_uint));
 
     /* Prepare parameters */
@@ -88,25 +82,24 @@ int main(void)
     /* The output list */
     stat |= clSetKernelArg(kernel, 1, sizeof(cl_mem), (void *)&outmem);
     /* Size of outmem as modulo */
-    stat |=
-        clSetKernelArg(kernel, 2, sizeof(unsigned int), (void *)&memsize);
+    stat |= clSetKernelArg(kernel, 2, sizeof(size_t), (void *)&memsize);
     CHECK_ERROR("Error setting args\n");
     /* Issue calls */
-    stat = clEnqueueNDRangeKernel(cq, kernel, 1, NULL, &rand_samples, &wgsize,
-                                  0, NULL, NULL);
+    stat = clEnqueueNDRangeKernel(cq, kernel, 1, NULL, &rand_samples, NULL, 0,
+                                  NULL, NULL);
     CHECK_ERROR("Error executing kernel\n");
     /* Wait all */
     clFinish(cq);
-    stat = clEnqueueReadBuffer(cq, outmem, CL_TRUE, 0,
-                               sizeof(cl_uint) * memsize, results, 0,
-                               NULL, NULL);
+    stat =
+        clEnqueueReadBuffer(cq, outmem, CL_TRUE, 0, sizeof(cl_uint) * memsize,
+                            results, 0, NULL, NULL);
     CHECK_ERROR("Error reading output array\n");
     for (size_t i = 0; i < memsize; ++i)
     {
         inside += results[i];
     }
 
-    printf("%lu/%lu\n", inside, rand_samples);
+    printf("%zu/%zu\n", inside, rand_samples);
     printf("%g\n", inside / (double)rand_samples * 4 * r * r);
 
     /* Clean up */
