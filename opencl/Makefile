@@ -6,13 +6,16 @@ LDFLAGS:=-lOpenCL
 all: mc
 
 clean:
-	rm -f mc_hypot_opencl.cli prog.h mc
+	rm -f mc_hypot_opencl.cli mc_hypot_opencl.d prog.h mc
 
 run: mc
 	./mc
 
 mc_hypot_opencl.cli: mc_hypot_opencl.cl
 	$(CC) -x c -E -o $@ $<
+	$(CC) -x c -o $(@:.cli=.d) -MM -MT $@ $<
+
+-include mc_hypot_opencl.d
 
 prog.h: mc_hypot_opencl.cli
 	echo "static const char * prog = " > $@
