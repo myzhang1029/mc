@@ -1,0 +1,3 @@
+AMD Radeon Pro 580: exp2(49)
+82407632404480/562949953421312
+./mc  268.66s user 2238.12s system 0% cpu 157:20:36.16 total
