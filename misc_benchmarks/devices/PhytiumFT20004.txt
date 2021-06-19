@@ -1,0 +1,28 @@
+hardware: Inspur CE3000F
+uname -rvm: 4.4.131-20200710.kylin.desktop-generic #kylin SMP Fri Jul 10 13:46:24 CST 2020 aarch64
+compiler: gcc version 5.4.0 20160609 (Ubuntu/Linaro 5.4.0-6kord1~16.04.12) Thread model: posix
+git hash: ef3e751
+
+hypot 1E+9
+146382228/1000000000
+real 2.59 user 9.88 sys 0.00 cpu 409%
+146382228/1000000000
+real 2.55 user 9.88 sys 0.00 cpu 435%
+146382228/1000000000
+real 2.59 user 9.88 sys 0.00 cpu 315%
+
+hypot 1E+10
+1463865828/10000000000
+real 25.49 user 99.56 sys 0.02 cpu 399%
+1463865828/10000000000
+real 25.39 user 99.58 sys 0.00 cpu 397%
+1463865828/10000000000
+real 25.50 user 99.56 sys 0.02 cpu 396%
+
+hypot 1e+11
+14637862068/100000000000
+real 253.80 user 995.71 sys 0.20 cpu 394%
+14637862068/100000000000
+real 253.64 user 995.71 sys 0.13 cpu 393%
+14637862068/100000000000
+real 252.91 user 995.70 sys 0.15 cpu 394%
