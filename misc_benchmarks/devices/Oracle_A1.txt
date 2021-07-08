@@ -1,0 +1,37 @@
+hardware: Oracle Cloud Ampere Altra 80C
+uname -rvm: 5.4.17-2102.201.3.el8uek.aarch64 #2 SMP Fri Apr 23 09:42:46 PDT 2021 aarch64
+compiler: gcc version 8.3.1 20191121 (Red Hat 8.3.1-5.0.2) (GCC) Thread model: posix
+git hash: ef3e751
+
+hypot 1E+9
+146382228/1000000000
+5.49user 0.00system 0:01.37elapsed 398%CPU (0avgtext+0avgdata 2752maxresident)k
+0inputs+0outputs (0major+55minor)pagefaults 0swaps
+146382228/1000000000
+5.49user 0.01system 0:01.39elapsed 394%CPU (0avgtext+0avgdata 2752maxresident)k
+0inputs+0outputs (0major+55minor)pagefaults 0swaps
+146382228/1000000000
+5.49user 0.00system 0:01.37elapsed 398%CPU (0avgtext+0avgdata 2752maxresident)k
+0inputs+0outputs (0major+55minor)pagefaults 0swaps
+
+hypot 1E+10
+1463865828/10000000000
+54.90user 0.00system 0:13.74elapsed 399%CPU (0avgtext+0avgdata 2816maxresident)k
+0inputs+0outputs (0major+56minor)pagefaults 0swaps
+1463865828/10000000000
+54.90user 0.00system 0:13.74elapsed 399%CPU (0avgtext+0avgdata 2752maxresident)k
+0inputs+0outputs (0major+55minor)pagefaults 0swaps
+1463865828/10000000000
+54.90user 0.00system 0:13.77elapsed 398%CPU (0avgtext+0avgdata 2816maxresident)k
+0inputs+0outputs (0major+56minor)pagefaults 0swaps
+
+hypot 1E+11
+14637862068/100000000000
+549.24user 0.01system 2:17.47elapsed 399%CPU (0avgtext+0avgdata 2752maxresident)k
+0inputs+0outputs (0major+55minor)pagefaults 0swaps
+14637862068/100000000000
+549.10user 0.00system 2:17.48elapsed 399%CPU (0avgtext+0avgdata 2752maxresident)k
+0inputs+0outputs (0major+55minor)pagefaults 0swaps
+14637862068/100000000000
+548.98user 0.00system 2:17.48elapsed 399%CPU (0avgtext+0avgdata 2816maxresident)k
+0inputs+0outputs (0major+57minor)pagefaults 0swaps
