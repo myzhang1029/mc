@@ -24,25 +24,25 @@
 
 // This function significantly speeds things up - with a very low risk of
 // overflow Always positive
-static inline double sqhypot(const double a, const double b)
+static inline float sqhypot(const float a, const double b)
 {
     return fma(a, a, b * b);
 }
 
 // The area can be obtained with inside / rand_samples * 4 * radius * radius
-uint64_t monte_carlo(const double radius, const uint64_t rand_samples)
+uint64_t monte_carlo(const float radius, const uint64_t rand_samples)
 {
-    const double r = radius * rand_samples;
-    const double sqr = r * r;
-    const double rmax = 2 * r + 1;
+    const float r = radius * rand_samples;
+    const float sqr = r * r;
+    const float rmax = 2 * r + 1;
     /* Scale onto the generated random number */
-    const double scale = ldexp(rmax, -32);
+    const float scale = ldexp(rmax, -32);
     uint64_t inside = 0;
 
 #pragma omp parallel
     {
-        double x_dot, y_dot;
-        double sqd1, sqd2;
+        float x_dot, y_dot;
+        float sqd1, sqd2;
         pcg32_random_t thrd_rngx, thrd_rngy;
         uint64_t i;
         pcg32_srand(&thrd_rngx, UINT64_C(42), UINT64_C(430));
@@ -53,7 +53,7 @@ uint64_t monte_carlo(const double radius, const uint64_t rand_samples)
             x_dot = pcg32_rand(&thrd_rngx) * scale;
             y_dot = pcg32_rand(&thrd_rngy) * scale;
             sqd1 = sqhypot(r - x_dot, r - y_dot);
-            sqd2 = sqhypot(2 * r - x_dot, y_dot);
+            sqd2 = sqhypot(x_dot, y_dot);
             if (sqd1 < sqr && sqd2 >= 4 * sqr)
                 ++inside;
         }
@@ -70,10 +70,10 @@ int main(int argc, char **argv)
     uint64_t rand_samples = UINT64_C(1280000000);
     // 146381717756/1000000000000
     uint64_t each, adjust = 0;
-    double radius = 5;
+    float radius = 5;
 
     uint64_t inside;
-    double size;
+    float size;
     int nproc, me;
     MPI_Status status;
 
@@ -95,9 +95,9 @@ int main(int argc, char **argv)
                      &status);
             inside += in;
         }
-        size = inside / (double)rand_samples * 4 * radius * radius;
+        size = inside / (float)rand_samples * 4 * radius * radius;
         printf("%" PRIu64 "/%" PRIu64 "\n", inside, rand_samples);
-        printf("%g\n", size);
+        printf("%f\n", size);
     }
     else /* Not controller */
     {
@@ -112,12 +112,12 @@ int main(int argc, char **argv)
 
 int main()
 {
-    double radius = 5.0;
+    float radius = 5.0;
     uint64_t rand_samples = UINT64_C(1280000000);
     uint64_t inside = monte_carlo(radius, rand_samples);
     printf("%" PRIu64 "/%" PRIu64 "\n", inside, rand_samples);
-    double size = inside / (double)rand_samples * 4 * radius * radius;
-    printf("%g\n", size);
+    float size = inside / (float)rand_samples * 4 * radius * radius;
+    printf("%f\n", size);
     return 0;
 }
 

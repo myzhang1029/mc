@@ -23,26 +23,26 @@
 #include "pcg_impl/pcg.h"
 
 /* When two uint64_ts multiply, it's a uint128.
- * so we use double */
+ * so we use float */
 #if __SIZEOF__INT128__ == 16
 typedef __uint128_t bigint;
 #else
-typedef double bigint;
+typedef float bigint;
 #endif
 
-static inline double y1_upper(const bigint x, const uint64_t r)
+static inline float y1_upper(const bigint x, const uint64_t r)
 {
     return r + sqrt(2 * x * r - x * x);
 }
 
-static inline double y1_lower(const bigint x, const uint64_t r)
+static inline float y1_lower(const bigint x, const uint64_t r)
 {
     return r - sqrt(2 * x * r - x * x);
 }
 
-static inline double y2(const bigint x, const uint64_t r)
+static inline float y2(const bigint x, const uint64_t r)
 {
-    return sqrt(4 * x * r - x * x);
+    return sqrt(4 * r * r - x * x);
 }
 
 // The area can be obtained with inside / rand_samples * 4 * radius * radius
@@ -53,7 +53,7 @@ uint64_t monte_carlo(const uint32_t radius, const uint64_t rand_samples)
     uint64_t i;
     uint64_t inside = 0;
     /* Compile time */
-    const double q3msqrt7 = (3 - sqrt(7)) / 4.0, q3asqrt7 = (3 + sqrt(7)) / 4.0;
+    const float q5msqrt7 = (5 - sqrt(7)) / 4.0, q5asqrt7 = (5 + sqrt(7)) / 4.0;
 
 #pragma omp parallel
     {
@@ -61,7 +61,7 @@ uint64_t monte_carlo(const uint32_t radius, const uint64_t rand_samples)
          * sequence more uniform, and it costs no
          * extra time */
         uint64_t x_dot, y_dot;
-        double yu, yl, yt;
+        float yu, yl, yt;
         pcg32x2_random_t thrd_rngx, thrd_rngy;
         pcg32x2_srand(&thrd_rngx, UINT64_C(42), UINT64_C(430));
         pcg32x2_srand(&thrd_rngy, UINT64_C(42), UINT64_C(431));
@@ -74,11 +74,11 @@ uint64_t monte_carlo(const uint32_t radius, const uint64_t rand_samples)
             yl = y1_lower(x_dot, r);
             yt = y2(x_dot, r);
             /* left segment */
-            if (x_dot < r * q3msqrt7 && yl <= y_dot && y_dot < yu)
+            if (r * q5msqrt7 <= x_dot && x_dot < r * q5asqrt7 &&
+                     yt <= y_dot && y_dot < yu)
                 ++inside;
             /* right segment */
-            else if (r * q3msqrt7 <= x_dot && x_dot < r * q3asqrt7 &&
-                     yt <= y_dot && y_dot < yu)
+            else if (r * q5asqrt7 <= x_dot && yl <= y_dot && y_dot < yu)
                 ++inside;
         }
     }
@@ -91,12 +91,12 @@ uint64_t monte_carlo(const uint32_t radius, const uint64_t rand_samples)
 
 int main(int argc, char **argv)
 {
-    uint64_t rand_samples = UINT64_C(1000000000);
+    uint64_t rand_samples = UINT64_C(1280000000);
     uint64_t each, adjust = 0;
     uint32_t radius = 5;
 
     uint64_t inside;
-    double size;
+    float size;
     int nproc, me;
     MPI_Status status;
 
@@ -118,7 +118,7 @@ int main(int argc, char **argv)
                      &status);
             inside += in;
         }
-        size = inside / (double)rand_samples * 4 * radius * radius;
+        size = inside / (float)rand_samples * 4 * radius * radius;
         printf("%" PRIu64 "/%" PRIu64 "\n", inside, rand_samples);
         printf("%g\n", size);
     }
@@ -135,12 +135,12 @@ int main(int argc, char **argv)
 
 int main()
 {
-    double radius = 5.0;
-    uint64_t rand_samples = UINT64_C(1000000000);
+    float radius = 5.0;
+    uint64_t rand_samples = UINT64_C(1280000000);
     uint64_t inside = monte_carlo(radius, rand_samples);
     printf("%" PRIu64 "/%" PRIu64 "\n", inside, rand_samples);
-    double size = inside / (double)rand_samples * 4 * radius * radius;
-    printf("%g\n", size);
+    float size = inside / (float)rand_samples * 4 * radius * radius;
+    printf("%f\n", size);
     return 0;
 }
 
