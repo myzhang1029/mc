@@ -8,16 +8,32 @@ build:
     - apt-get update
     - apt-get -y install gcc mpich
   script:
-    - gcc -Ofast -fopenmp -o mc_func mc_func.c -lm
-    - mpicc -Ofast -o mc_func_mpi mc_func.c -DUSE_MPI -lm
+    - gcc -Ofast -fopenmp -o mc_func_naive mc_func_naive.c -lm
+    - mpicc -Ofast -o mc_func_naive_mpi mc_func_naive.c -DUSE_MPI -lm
+    - gcc -Ofast -fopenmp -o mc_func_optimized mc_func_optimized.c -lm
+    - mpicc -Ofast -o mc_func_optimized_mpi mc_func_optimized.c -DUSE_MPI -lm
+    - gcc -Ofast -fopenmp -o mc_func_uniform mc_func_uniform.c -lm
+    - mpicc -Ofast -o mc_func_uniform_mpi mc_func_uniform.c -DUSE_MPI -lm
+    - gcc -Ofast -fopenmp -o mc_func_unoptimized mc_func_unoptimized.c -lm
+    - mpicc -Ofast -o mc_func_unoptimized_mpi mc_func_unoptimized.c -DUSE_MPI -lm
     - gcc -Ofast -fopenmp -o mc_hypot mc_hypot.c -lm
     - mpicc -Ofast -o mc_hypot_mpi mc_hypot.c -DUSE_MPI -lm
+    - gcc -Ofast -fopenmp -o mc_hypot_naive mc_hypot_naive.c -lm
+    - mpicc -Ofast -o mc_hypot_naive_mpi mc_hypot_naive.c -DUSE_MPI -lm
   artifacts:
     paths:
-      - mc_func
-      - mc_func_mpi
+      - mc_func_naive
+      - mc_func_optimized
+      - mc_func_uniform
+      - mc_func_unoptimized
       - mc_hypot
+      - mc_hypot_naive
+      - mc_func_naive_mpi
+      - mc_func_optimized_mpi
+      - mc_func_uniform_mpi
+      - mc_func_unoptimized_mpi
       - mc_hypot_mpi
+      - mc_hypot_naive_mpi
 
 test:
   stage: test
@@ -25,7 +41,15 @@ test:
     - apt-get update
     - apt-get install -y mpich time
   script:
-    - /usr/bin/time ./mc_func
-    - /usr/bin/time mpiexec -n 4 ./mc_func_mpi
+    - /usr/bin/time ./mc_func_naive
+    - /usr/bin/time ./mc_func_optimized
+    - /usr/bin/time ./mc_func_uniform
+    - /usr/bin/time ./mc_func_unoptimized
     - /usr/bin/time ./mc_hypot
+    - /usr/bin/time ./mc_hypot_naive
+    - /usr/bin/time mpiexec -n 4 ./mc_func_naive_mpi
+    - /usr/bin/time mpiexec -n 4 ./mc_func_optimized_mpi
+    - /usr/bin/time mpiexec -n 4 ./mc_func_uniform_mpi
+    - /usr/bin/time mpiexec -n 4 ./mc_func_unoptimized_mpi
     - /usr/bin/time mpiexec -n 4 ./mc_hypot_mpi
+    - /usr/bin/time mpiexec -n 4 ./mc_hypot_naive_mpi
