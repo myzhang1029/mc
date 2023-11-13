@@ -1,6 +1,6 @@
 /*
  Hypot Monte Carlo CPU OpenCL kernel
- Copyright 2019-2021 Zhang Maiyun <myzhang1029@hotmail.com>
+ Copyright 2019-2021 Zhang Maiyun <me@maiyun.me>
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.

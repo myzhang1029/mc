@@ -1,7 +1,7 @@
 # cython: cdivision=True, wraparound=False, boundscheck=False
 #
 # Standard Functional Monte Carlo Cython code
-# Copyright 2019-2022 Zhang Maiyun <myzhang1029@hotmail.com>
+# Copyright 2019-2022 Zhang Maiyun <me@maiyun.me>
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.

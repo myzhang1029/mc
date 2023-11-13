@@ -1,6 +1,6 @@
 /*
  Hypot Monte Carlo kernel for Metal
- Copyright 2021 Zhang Maiyun <myzhang1029@hotmail.com>
+ Copyright 2021 Zhang Maiyun <me@maiyun.me>
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -65,7 +65,7 @@ static inline void pcg32_advance(thread pcg32_random_t *rng,
     uint64_t acc_plus = 0u;
     uint64_t cur_mult = 6364136223846793005ULL;
     uint64_t cur_plus = rng->inc;
-    
+
     while (delta > 0)
     {
         if (delta & 1)
@@ -104,21 +104,20 @@ kernel void monte_carlo(/* Calculate parameter */
     /* Scale onto the generated random number */
     const float scale = ldexp(rmax, -32);
     size_t rank = threads_per_threadgroup * threadgroup_position_in_grid + thread_position_in_threadgroup;
-    
+
     float x_dot, y_dot, sqd1, sqd2;
     pcg32_random_t rng;
-    
+
     pcg32_srand(&rng, 42UL, 430UL);
     /* Skip "previous" workers */
     pcg32_advance(&rng, rank * 2);
-    
+
     x_dot = pcg32_rand(&rng) * scale;
     y_dot = pcg32_rand(&rng) * scale;
-    
+
     sqd1 = sqhypot(scaled_radius - x_dot, scaled_radius - y_dot);
     sqd2 = sqhypot(2 * scaled_radius - x_dot, y_dot);
     /* Store & Return */
     if (sqd1 < sqr && sqd2 >= 4 * sqr)
         atomic_fetch_add_explicit(results + rank % modulo, 1, memory_order_relaxed);
 }
-
