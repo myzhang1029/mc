@@ -1,6 +1,6 @@
 /*
  OpenCL wrapper code
- Copyright 2019-2021 Zhang Maiyun <me@maiyun.me>
+ Copyright 2019-2025 Zhang Maiyun <me@maiyun.me>
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@
 #include <CL/cl.h>
 #endif
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "tool.h"
