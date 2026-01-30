@@ -78,10 +78,11 @@ int main(void)
     {
         size_t len;
         char buffer[2048];
+        cl_int getinfo_stat;
         fprintf(stderr, "Error building program\n");
-        clGetProgramBuildInfo(program, to_use, CL_PROGRAM_BUILD_LOG,
+        getinfo_stat = clGetProgramBuildInfo(program, to_use, CL_PROGRAM_BUILD_LOG,
                               sizeof(buffer), buffer, &len);
-        fprintf(stderr, "%s\n", buffer);
+        fprintf(stderr, "(%d, %d) %s\n", stat, getinfo_stat, buffer);
         exit(1);
     }
 
